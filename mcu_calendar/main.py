@@ -1,12 +1,14 @@
 import datetime
-import os.path
+import os
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+import yaml
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+SCOPES = ['https://www.googleapis.com/auth/calendar.events']
+
 
 def get_google_creds():
     creds = None
@@ -28,25 +30,49 @@ def get_google_creds():
     return creds
 
 
-def main():
-    creds = get_google_creds()
-    service = build('calendar', 'v3', credentials=creds)
+def get_cal_id():
+    with open('cal_id.txt', 'r') as reader:
+        return reader.read().strip()
 
+
+def get_google_events(num_events):
+    global service
+    global calId
     now = datetime.datetime.utcnow().isoformat() + 'Z'
-    print('Getting the upcoming 10 events')
     events_result = service.events().list(
-        calendarId='primary',
+        calendarId=calId,
         timeMin=now,
-        maxResults=10,
+        maxResults=num_events,
         singleEvents=True,
         orderBy='startTime').execute()
-    events = events_result.get('items', [])
+    return events_result.get('items', [])
 
-    if not events:
-        print('No upcoming events found.')
-    for event in events:
-        start = event['start'].get('dateTime', event['start'].get('date'))
-        print(start, event['summary'])
+
+def get_movies():
+    movies = []
+    for filename in os.listdir('data'):
+        with open(os.path.join('data', filename), 'r') as movie_yaml:
+            movies.append(yaml.load(movie_yaml.read(), Loader=yaml.Loader))
+    return movies
+
+
+calId = get_cal_id()
+creds = get_google_creds()
+service = build('calendar', 'v3', credentials=creds)
+def main():
+    movies = get_movies()
+
+    for movie in movies:
+        print(movie['title'], movie['release_date'].isoformat())
+        movie_event = {
+            "start": { "date": movie['release_date'].isoformat() },
+            "end": { "date": movie['release_date'].isoformat() },
+            "summary": movie['title'],
+            "description": movie['description']
+        }
+        service.events().insert(
+            calendarId=calId,
+            body=movie_event).execute()
 
 if __name__ == '__main__':
     main()
