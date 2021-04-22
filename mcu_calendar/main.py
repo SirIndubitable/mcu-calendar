@@ -40,17 +40,14 @@ def get_google_events():
     global service
     global calId
     now = datetime.datetime.utcnow().isoformat() + 'Z'
-    events_result = events_service.list(
-        calendarId=calId,
-        singleEvents=True,
-        orderBy='startTime').execute()
+    events_result = events_service.list(calendarId=calId).execute()
     return events_result.get('items', [])
 
 
 def get_movies():
     movies = []
-    for filename in os.listdir('data'):
-        with open(os.path.join('data', filename), 'r') as movie_yaml:
+    for filename in os.listdir(os.path.join('data', 'movies')):
+        with open(os.path.join('data', 'movies', filename), 'r') as movie_yaml:
             yaml_movie = yaml.load(movie_yaml, Loader=yaml.Loader)
             movies.append({
                 "start": { "date": yaml_movie['release_date'].isoformat() },
