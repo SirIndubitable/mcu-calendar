@@ -6,17 +6,17 @@ all: test lint run
 run:
 	$(info )
 	$(info ************  Running        ************)
-	python $(PROJECT_NAME)/main.py
+	@python $(PROJECT_NAME)/main.py
 
 test:
 	$(info )
 	$(info ************  Running Tests  ************)
-	python -m pytest
+	@python -m pytest
 
 lint:
 	$(info )
 	$(info ************  Linting        ************)
-	pylint $(PROJECT_NAME)
+	@pylint $(PROJECT_NAME)
 
 init:
 	pip install -r requirements.txt
