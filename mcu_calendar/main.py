@@ -44,12 +44,23 @@ def get_google_events():
     return events_result.get('items', [])
 
 
-class Movie():
-    def __init__(self, yaml_path):
-        with open(yaml_path, 'r') as yaml_file:
-            yaml_dict = yaml.load(yaml_file, Loader=yaml.Loader)
-            self.__dict__.update(yaml_dict)
+class GoogleMediaEvent(object):
+    def __init__(self, args):
+        if isinstance(args, str):
+            with open(args, 'r') as yaml_file:
+                yaml_dict = yaml.load(yaml_file, Loader=yaml.Loader)
+                self.__init__(yaml_dict)
+        if isinstance(args, dict):
+            self.__dict__.update(args)
 
+    def to_google_event(self):
+        pass
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class Movie(GoogleMediaEvent):
     def to_google_event(self):
         return {
             "start": { "date": self.release_date.isoformat() },
@@ -69,11 +80,6 @@ class Movie():
                and self_event["end"]["date"]   == other["end"]["date"]   \
                and self_event["summary"]       == other["summary"]       \
                and self_event["description"]   == other["description"]
-
-
-    def __ne__(self, other):
-        return not self == other
-
 
     def __str__(self):
         return f"{truncate(self.title, 26)} {self.release_date.strftime('%b %d, %Y')}"
