@@ -56,11 +56,16 @@ class GoogleMediaEvent(object):
     def to_google_event(self):
         pass
 
+    def sort_val(self):
+        pass
+
     def __ne__(self, other):
         return not self == other
 
 
 class Movie(GoogleMediaEvent):
+    sort_key = "release_date"
+
     def to_google_event(self):
         return {
             "start": { "date": self.release_date.isoformat() },
@@ -68,6 +73,9 @@ class Movie(GoogleMediaEvent):
             "summary": self.title,
             "description": self.description,
         }
+
+    def sort_val(self):
+        return self.release_date
 
     def __eq__(self, other):
         if isinstance(other, Movie):
@@ -85,9 +93,46 @@ class Movie(GoogleMediaEvent):
         return f"{truncate(self.title, 26)} {self.release_date.strftime('%b %d, %Y')}"
 
 
+class Show(GoogleMediaEvent):
+    def _rfc5545_weekday(self):
+        _recurrence_weekday = [ "MO", "TU", "WE", "TH", "FR", "SA", "SU" ]
+        return _recurrence_weekday[self.start_date.weekday()]
+
+    def to_google_event(self):
+        return {
+            "summary": self.title,
+            "start": { "date": self.start_date.isoformat() },
+            "end": { "date": (self.start_date + datetime.timedelta(days=1)).isoformat() },
+            "recurrence": [f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT={self.weeks};BYDAY={self._rfc5545_weekday()}"],
+        }
+
+    def sort_val(self):
+        return self.start_date
+
+    def __eq__(self, other):
+        if isinstance(other, Movie):
+            return self.title      == other.title      \
+               and self.start_date == other.start_date \
+               and self.weeks      == other.weeks
+        else:
+            self_event = self.to_google_event()
+            return self_event["summary"]       == other["summary"]       \
+               and self_event["start"]["date"] == other["start"]["date"] \
+               and self_event["end"]["date"]   == other["end"]["date"]   \
+               and self_event["recurrence"]    == other["recurrence"]
+
+    def __str__(self):
+        return f"{truncate(self.title, 26)} {self.start_date.strftime('%b %d, %Y')}"
+
+
 def get_movies():
     movies_dir = os.path.join('data', 'movies')
     return [Movie(os.path.join(movies_dir, filename)) for filename in os.listdir(movies_dir)]
+
+
+def get_shows():
+    shows_dir = os.path.join('data', 'shows')
+    return [Show(os.path.join(shows_dir, filename)) for filename in os.listdir(shows_dir)]
 
 
 def truncate(string, length):
@@ -107,10 +152,10 @@ def create_google_event(progressTitle, items, existingEvents):
         BarColumn(),
         "[progress.percentage]{task.percentage:>3.0f}%",
         TimeElapsedColumn())
-    items.sort(key=lambda m: m.release_date)
+    items.sort(key=lambda i: i.sort_val())
     with progress:
         for item in progress.track(items):
-            event = find(existingEvents, lambda e: e['summary'] == item.title)
+            event = find(existingEvents, lambda e: 'summary' in e and e['summary'] == item.title)
             if event == None:
                 progress.print(f"[reset]{item}", "[red](Adding)")
                 events_service.insert(calendarId=calId, body=item.to_google_event()).execute()
@@ -129,6 +174,8 @@ def main():
     global events_service
     events = get_google_events()
     create_google_event("Movies...", get_movies(), events)
+    create_google_event("Shows...", get_shows(), events)
+
 
 if __name__ == '__main__':
     main()
