@@ -110,7 +110,7 @@ class Show(GoogleMediaEvent):
         return self.start_date
 
     def __eq__(self, other):
-        if isinstance(other, Movie):
+        if isinstance(other, Show):
             return self.title      == other.title      \
                and self.start_date == other.start_date \
                and self.weeks      == other.weeks
