@@ -69,8 +69,29 @@ def find(f, seq):
     return None
 
 
-def format_movie(movie):
-    return f"[reset]{truncate(movie['summary'], 26)} {datetime.date.fromisoformat(movie['start']['date']).strftime('%b %d, %Y')}"
+def format_item(item):
+    return f"[reset]{truncate(item['summary'], 26)} {datetime.date.fromisoformat(item['start']['date']).strftime('%b %d, %Y')}"
+
+
+def create_google_event(progressTitle, items, existingEvents):
+    progress = Progress(
+        TextColumn(progressTitle),
+        BarColumn(),
+        "[progress.percentage]{task.percentage:>3.0f}%",
+        TimeElapsedColumn())
+    items.sort(key=lambda m: m['start']['date'])
+    with progress:
+        for item in progress.track(items):
+            event = find(lambda e: e['summary'] == item['summary'], existingEvents)
+            if event == None:
+                progress.print(format_item(item), "[red](Adding)")
+                events_service.insert(calendarId=calId, body=item).execute()
+            elif event["start"]["date"] != item["start"]["date"] \
+              or event['description'] != item['description']:
+                progress.print(format_item(item), "[yellow](Updating)")
+                events_service.update(calendarId=calId, eventId=event["id"], body=item).execute()
+            else:
+                progress.print(format_item(item), "[cyan](Skipping)")
 
 
 import time
@@ -81,27 +102,7 @@ def main():
     global calId
     global events_service
     events = get_google_events()
-    movies = get_movies()
-    movies.sort(key=lambda m: m['start']['date'])
-
-    progress = Progress(
-        TextColumn("{task.description}"),
-        BarColumn(),
-        "[progress.percentage]{task.percentage:>3.0f}%",
-        TimeElapsedColumn())
-
-    with progress:
-        for movie in progress.track(movies):
-            event = find(lambda e: e['summary'] == movie['summary'], events)
-            if event == None:
-                progress.print(format_movie(movie), "[red](Adding)")
-                events_service.insert(calendarId=calId, body=movie).execute()
-            elif event["start"]["date"] != movie["start"]["date"] \
-              or event['description'] != movie['description']:
-                progress.print(format_movie(movie), "[yellow](Updating)")
-                events_service.update(calendarId=calId, eventId=event["id"], body=movie).execute()
-            else:
-                progress.print(format_movie(movie), "[cyan](Skipping)")
+    create_google_event("Movies...", get_movies(), events)
 
 
 if __name__ == '__main__':
