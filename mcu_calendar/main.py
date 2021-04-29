@@ -267,12 +267,13 @@ def create_google_event(progress_title, items, existing_events):
                 progress.print(f"[reset]{item}", "[cyan](Skipping)")
 
 
-EVENTS_SERVICE = build('calendar', 'v3', credentials=get_google_creds()).events()
 
 def main():
     """
     Main method that updates the users google calendar
     """
+    global EVENTS_SERVICE
+    EVENTS_SERVICE = build('calendar', 'v3', credentials=get_google_creds()).events()
     events = get_google_events()
     create_google_event("[bold]Movies..", get_movies(), events)
     create_google_event("[bold]Shows...", get_shows(), events)
