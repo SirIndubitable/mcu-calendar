@@ -12,6 +12,7 @@ from rich.progress import Progress, BarColumn, TextColumn, TimeElapsedColumn
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.events']
+EVENTS_SERVICE = None
 
 
 def update_creds_token(creds):

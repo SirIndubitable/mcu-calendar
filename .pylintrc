@@ -1,6 +1,8 @@
 [TYPECHECK]
-ignored-modules=google,googleapiclient
-
+ignored-modules=
+    google,
+    googleapiclient,
 
 disable=
-    cell-var-from-loop
+    cell-var-from-loop,
+    global-statement,
