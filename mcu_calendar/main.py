@@ -11,29 +11,59 @@ from rich.progress import Progress, BarColumn, TextColumn, TimeElapsedColumn
 SCOPES = ['https://www.googleapis.com/auth/calendar.events']
 
 
+def update_creds_token(creds):
+    with open('token.json', 'w') as token:
+       token.write(creds.to_json())
+
+
 def get_google_creds():
-    creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
+        if creds.valid:
+            return creds
+        elif creds.expired and creds.refresh_token:
             creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
+            update_creds_token(creds)
+            return creds
+
+    # This is the credentials file that is created from making a project with an 
+    # OAuth 2.0 Client ID from https://console.cloud.google.com/
+    if os.path.exists('credentials.json'):
+        flow = InstalledAppFlow.from_client_secrets_file(
+            client_secrets_file='credentials.json',
+            scopes=SCOPES)
+        creds = flow.run_console(access_type='offline', include_granted_scopes='true')
+        update_creds_token(creds)
+        return creds
+
+    # Lastly if there is no credentials.json override.  We should use the environment variables
+    # this is what the CI pipeline should end up using
+    info = {
+        "token": os.environ.get("GOOGLE_API_TOKEN"),
+        "refresh_token": os.environ.get("GOOGLE_API_REFRESH_TOKEN"),
+        "client_id": os.environ.get("GOOGLE_CLIENT_ID"),
+        "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET"),
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "quota_project_id":"yaml-mcu-calendar-311822"
+    }
+
+    creds = Credentials.from_authorized_user_info(info, scopes=SCOPES)
+    creds.refresh(Request())
     return creds
 
 
 def get_cal_id():
-    with open('cal_id.txt', 'r') as reader:
-        return reader.read().strip()
+    # The actual mcu calendar uses it's "primary" calendar
+    # Though we have two options to override this for testing purposes
+    if os.path.exists('cal_id.txt'):
+        with open('cal_id.txt', 'r') as reader:
+            return reader.read().strip()
+    if 'GOOGLE_MCU_CALENDAR_ID' in os.environ:
+        return os.environ['GOOGLE_MCU_CALENDAR_ID']
+    return 'primary'
 
 
 def get_google_events():
@@ -167,14 +197,12 @@ def create_google_event(progressTitle, items, existingEvents):
 
 
 calId = get_cal_id()
-creds = get_google_creds()
-events_service = build('calendar', 'v3', credentials=creds).events()
+events_service = build('calendar', 'v3', credentials=get_google_creds()).events()
+
 def main():
-    global calId
-    global events_service
     events = get_google_events()
-    create_google_event("Movies...", get_movies(), events)
-    create_google_event("Shows...", get_shows(), events)
+    create_google_event("[bold]Movies..", get_movies(), events)
+    create_google_event("[bold]Shows...", get_shows(), events)
 
 
 if __name__ == '__main__':
