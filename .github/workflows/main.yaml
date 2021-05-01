@@ -30,10 +30,10 @@ jobs:
       - name: Install Python Requirements
         run: make init
 
+      - name: Decrypt Service token
+        run: ./.github/scripts/decrypt_secret.sh
+        env:
+          SERVICE_DECRYPT_PASS: ${{ secrets.SERVICE_DECRYPT_PASS }}
+
       - name: Export Calendar
         run: make run
-        env:
-          GOOGLE_API_TOKEN: ${{ secrets.GOOGLE_API_TOKEN }}
-          GOOGLE_API_REFRESH_TOKEN: ${{ secrets.GOOGLE_API_REFRESH_TOKEN }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}

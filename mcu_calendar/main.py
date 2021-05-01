@@ -3,10 +3,11 @@ This script adds events to a google users calendar for Movies and TV shows defin
 """
 import datetime
 import os
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google.api_core.client_options import ClientOptions
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
 import yaml
 from rich.progress import Progress, BarColumn, TextColumn, TimeElapsedColumn
 
@@ -24,12 +25,11 @@ def update_creds_token(creds):
         token.write(creds.to_json())
 
 
-def get_google_creds():
+def get_local_creds():
     """
     Gets the google Credentials object in this order:
     1. Automatically created token.json
     2. credentials.json file created from https://console.cloud.google.com/
-    3. Environment variables containing the token information
     """
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
@@ -50,20 +50,8 @@ def get_google_creds():
         update_creds_token(creds)
         return creds
 
-    # Lastly if there is no credentials.json override.  We should use the environment variables
-    # this is what the CI pipeline should end up using
-    info = {
-        "token": os.environ.get("GOOGLE_API_TOKEN"),
-        "refresh_token": os.environ.get("GOOGLE_API_REFRESH_TOKEN"),
-        "client_id": os.environ.get("GOOGLE_CLIENT_ID"),
-        "client_secret": os.environ.get("GOOGLE_CLIENT_SECRET"),
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "quota_project_id":"yaml-mcu-calendar-311822"
-    }
-
-    creds = Credentials.from_authorized_user_info(info, scopes=SCOPES)
-    creds.refresh(Request())
-    return creds
+    raise RuntimeError("Could not load local credentials, add a credentials.json "
+                       "file from https://console.cloud.google.com/")
 
 
 def get_cal_id():
@@ -72,14 +60,16 @@ def get_cal_id():
     belong to the user that logged in from get_google_creds()
     1. From the cal_id.txt file
     2. From GOOGLE_MCU_CALENDAR_ID environment variable
-    3. The primary user calendar
     """
     if os.path.exists('cal_id.txt'):
         with open('cal_id.txt', 'r') as reader:
             return reader.read().strip()
     if 'GOOGLE_MCU_CALENDAR_ID' in os.environ:
         return os.environ['GOOGLE_MCU_CALENDAR_ID']
-    return 'primary'
+
+    # This would normally be secret, but this project is so people can add this calendar
+    # to their calendars, and this information is on the iCal url, so why hide it?
+    return "unofficial.mcu.calendar@gmail.com"
 
 
 def get_google_events():
@@ -268,17 +258,25 @@ def create_google_event(progress_title, items, existing_events):
                 progress.print(f"[reset]{item}", "[cyan](Skipping)")
 
 
-
 def main():
     """
     Main method that updates the users google calendar
     """
-    global EVENTS_SERVICE
-    EVENTS_SERVICE = build('calendar', 'v3', credentials=get_google_creds()).events()
     events = get_google_events()
     create_google_event("[bold]Movies..", get_movies(), events)
     create_google_event("[bold]Shows...", get_shows(), events)
 
 
 if __name__ == '__main__':
+    token_path = os.path.join(os.environ.get("HOME"), "secrets", "service_token.json")
+    if os.path.exists(token_path):
+        EVENTS_SERVICE = build(
+            serviceName= 'calendar',
+            version= 'v3',
+            client_options=ClientOptions(credentials_file=token_path, scopes=SCOPES)).events()
+    else:
+        EVENTS_SERVICE = build(
+            serviceName= 'calendar',
+            version= 'v3',
+            credentials= get_local_creds()).events()
     main()
