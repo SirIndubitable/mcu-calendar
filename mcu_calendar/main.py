@@ -133,11 +133,11 @@ class Movie(GoogleMediaEvent):
             return self.title        == other.title       \
                and self.description  == other.description \
                and self.release_date == other.release_date
-        self_event = self.to_google_event()
-        return self_event["start"]["date"] == other["start"]["date"] \
-           and self_event["end"]["date"]   == other["end"]["date"]   \
-           and self_event["summary"]       == other["summary"]       \
-           and self_event["description"]   == (other["description"] if "description" in other else "")
+        event = self.to_google_event()
+        return event["start"]["date"] == other["start"]["date"] \
+           and event["end"]["date"]   == other["end"]["date"]   \
+           and event["summary"]       == other["summary"]       \
+           and event["description"]   == (other["description"] if "description" in other else "")
 
     def __str__(self):
         return f"{truncate(self.title, 26)} {self.release_date.strftime('%b %d, %Y')}"
