@@ -89,15 +89,26 @@ class GoogleMediaEvent():
     """
     Base class for a google event that is defined in yaml
     """
-    source = {
-        "title": "MCU Calendar",
-        "url": "https://github.com/SirIndubitable/mcu-calendar"
+    event_dict = {
+            "source": {
+                "title": "MCU Calendar",
+                "url": "https://github.com/SirIndubitable/mcu-calendar"
+            },
+            "transparency": "transparent", # "transparent" means "Show me as Available "
     }
 
     def to_google_event(self):
         """
         Converts this object to a google calendar api event
         https://developers.google.com/calendar/v3/reference/events#resource
+        """
+        return {**GoogleMediaEvent.event_dict, **self._to_google_event_core()}
+
+
+    def _to_google_event_core(self):
+        """
+        The method that subclasses should override for baseclass specific
+        google calendar api event data
         """
 
     def sort_val(self):
@@ -127,13 +138,12 @@ class Movie(GoogleMediaEvent):
             yaml_data = yaml.load(yaml_file, Loader=yaml.Loader)
         return Movie(**yaml_data)
 
-    def to_google_event(self):
+    def _to_google_event_core(self):
         return {
             "start": { "date": self.release_date.isoformat() },
             "end": { "date": self.release_date.isoformat() },
             "summary": self.title,
             "description": self.description,
-            "source": GoogleMediaEvent.source,
         }
 
     def sort_val(self):
@@ -176,7 +186,7 @@ class Show(GoogleMediaEvent):
         _recurrence_weekday = [ "MO", "TU", "WE", "TH", "FR", "SA", "SU" ]
         return _recurrence_weekday[self.start_date.weekday()]
 
-    def to_google_event(self):
+    def _to_google_event_core(self):
         return {
             "summary": self.title,
             "start": { "date": self.start_date.isoformat() },
@@ -184,7 +194,6 @@ class Show(GoogleMediaEvent):
             "recurrence": [
                 f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT={self.weeks};BYDAY={self._rfc5545_weekday()}"
             ],
-            "source": GoogleMediaEvent.source,
         }
 
     def sort_val(self):
