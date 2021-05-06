@@ -89,6 +89,11 @@ class GoogleMediaEvent():
     """
     Base class for a google event that is defined in yaml
     """
+    source = {
+        "title": "MCU Calendar",
+        "url": "https://github.com/SirIndubitable/mcu-calendar"
+    }
+
     def to_google_event(self):
         """
         Converts this object to a google calendar api event
@@ -128,6 +133,7 @@ class Movie(GoogleMediaEvent):
             "end": { "date": self.release_date.isoformat() },
             "summary": self.title,
             "description": self.description,
+            "source": GoogleMediaEvent.source,
         }
 
     def sort_val(self):
@@ -178,6 +184,7 @@ class Show(GoogleMediaEvent):
             "recurrence": [
                 f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT={self.weeks};BYDAY={self._rfc5545_weekday()}"
             ],
+            "source": GoogleMediaEvent.source,
         }
 
     def sort_val(self):
