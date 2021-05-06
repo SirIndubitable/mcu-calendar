@@ -4,6 +4,7 @@ This script adds events to a google users calendar for Movies and TV shows defin
 import datetime
 import os
 from google.api_core.client_options import ClientOptions
+from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -36,9 +37,12 @@ def get_local_creds():
         if creds.valid:
             return creds
         if creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-            update_creds_token(creds)
-            return creds
+            try:
+                creds.refresh(Request())
+                update_creds_token(creds)
+                return creds
+            except RefreshError:
+                pass
 
     # This is the credentials file that is created from making a project with an
     # OAuth 2.0 Client ID from
