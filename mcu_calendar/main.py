@@ -1,6 +1,7 @@
 """
 This script adds events to a google users calendar for Movies and TV shows defined in ./data/
 """
+import argparse
 import datetime
 import os
 from google.api_core.client_options import ClientOptions
@@ -235,7 +236,7 @@ def find(seq, predicate):
     return None
 
 
-def create_google_event(progress_title, items, existing_events):
+def create_google_event(progress_title, items, existing_events, force):
     """
     Creates or Updates events if needed on the calendar based on the items objects
     """
@@ -252,7 +253,7 @@ def create_google_event(progress_title, items, existing_events):
             if event is None:
                 progress.print(f"[reset]{item}", "[red](Adding)")
                 EVENTS_SERVICE.insert(calendarId=calendar_id, body=item.to_google_event()).execute()
-            elif item != event:
+            elif item != event or force:
                 progress.print(f"[reset]{item}", "[yellow](Updating)")
                 EVENTS_SERVICE.update(
                     calendarId=calendar_id,
@@ -262,16 +263,19 @@ def create_google_event(progress_title, items, existing_events):
                 progress.print(f"[reset]{item}", "[cyan](Skipping)")
 
 
-def main():
+def main(args):
     """
     Main method that updates the users google calendar
     """
     events = get_google_events()
-    create_google_event("[bold]Movies..", get_movies(), events)
-    create_google_event("[bold]Shows...", get_shows(), events)
+    create_google_event("[bold]Movies..", get_movies(), events, force=args.force)
+    create_google_event("[bold]Shows...", get_shows(), events, force=args.force)
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Update a google calendarwith MCU Release info')
+    parser.add_argument('--force', action='store_true', help='Force update the existing events')
+
     token_path = os.path.join(os.environ.get("HOME"), "secrets", "service_token.json")
     if os.path.exists(token_path):
         EVENTS_SERVICE = build(
@@ -283,4 +287,4 @@ if __name__ == '__main__':
             serviceName= 'calendar',
             version= 'v3',
             credentials= get_local_creds()).events()
-    main()
+    main(parser.parse_args())

@@ -8,6 +8,11 @@ run:
 	$(info ************  Running        ************)
 	@python $(PROJECT_NAME)/main.py
 
+force:
+	$(info )
+	$(info ************  Running(force) ************)
+	@python $(PROJECT_NAME)/main.py --force
+
 test:
 	$(info )
 	$(info ************  Running Tests  ************)
