@@ -89,21 +89,23 @@ class GoogleMediaEvent():
     """
     Base class for a google event that is defined in yaml
     """
-    event_dict = {
-            "source": {
-                "title": "MCU Calendar",
-                "url": "https://github.com/SirIndubitable/mcu-calendar"
-            },
-            "transparency": "transparent", # "transparent" means "Show me as Available "
-    }
+    def __init__(self, description):
+        self.description = description
 
     def to_google_event(self):
         """
         Converts this object to a google calendar api event
         https://developers.google.com/calendar/v3/reference/events#resource
         """
-        return {**GoogleMediaEvent.event_dict, **self._to_google_event_core()}
-
+        base_event = {
+            "description": self.description,
+            "source": {
+                "title": "MCU Calendar",
+                "url": "https://github.com/SirIndubitable/mcu-calendar"
+            },
+            "transparency": "transparent", # "transparent" means "Show me as Available "
+        }
+        return {**base_event, **self._to_google_event_core()}
 
     def _to_google_event_core(self):
         """
@@ -116,6 +118,11 @@ class GoogleMediaEvent():
         Gets the value that this object should be sorted by
         """
 
+    def __eq__(self, other):
+        if isinstance(other, GoogleMediaEvent):
+            return self.description == other.description
+        return self.description == (other["description"] if "description" in other else "")
+
     def __ne__(self, other):
         return not self == other
 
@@ -125,8 +132,8 @@ class Movie(GoogleMediaEvent):
     The event that describes a movie release date
     """
     def __init__(self, title, description, release_date):
+        super().__init__(description)
         self.title = title
-        self.description = description
         self.release_date = release_date
 
     @staticmethod
@@ -143,22 +150,21 @@ class Movie(GoogleMediaEvent):
             "start": { "date": self.release_date.isoformat() },
             "end": { "date": self.release_date.isoformat() },
             "summary": self.title,
-            "description": self.description,
         }
 
     def sort_val(self):
         return self.release_date
 
     def __eq__(self, other):
+        if not super().__eq__(other):
+            return False
         if isinstance(other, Movie):
             return self.title        == other.title       \
-               and self.description  == other.description \
                and self.release_date == other.release_date
         event = self.to_google_event()
         return event["start"]["date"] == other["start"]["date"] \
            and event["end"]["date"]   == other["end"]["date"]   \
-           and event["summary"]       == other["summary"]       \
-           and event["description"]   == (other["description"] if "description" in other else "")
+           and event["summary"]       == other["summary"]
 
     def __str__(self):
         return f"{truncate(self.title, 26)} {self.release_date.strftime('%b %d, %Y')}"
@@ -168,7 +174,8 @@ class Show(GoogleMediaEvent):
     """
     The event that describes a show start date and how many weeks it runs for
     """
-    def __init__(self, title, start_date, weeks):
+    def __init__(self, title, start_date, weeks, description):
+        super().__init__(description)
         self.title = title
         self.start_date = start_date
         self.weeks = weeks
@@ -200,15 +207,17 @@ class Show(GoogleMediaEvent):
         return self.start_date
 
     def __eq__(self, other):
+        if not super().__eq__(other):
+            return False
         if isinstance(other, Show):
             return self.title      == other.title      \
                and self.start_date == other.start_date \
                and self.weeks      == other.weeks
-        self_event = self.to_google_event()
-        return self_event["summary"]       == other["summary"]       \
-           and self_event["start"]["date"] == other["start"]["date"] \
-           and self_event["end"]["date"]   == other["end"]["date"]   \
-           and self_event["recurrence"]    == other["recurrence"]
+        event = self.to_google_event()
+        return event["summary"]       == other["summary"]       \
+           and event["start"]["date"] == other["start"]["date"] \
+           and event["end"]["date"]   == other["end"]["date"]   \
+           and event["recurrence"]    == other["recurrence"]
 
     def __str__(self):
         return f"{truncate(self.title, 26)} {self.start_date.strftime('%b %d, %Y')}"

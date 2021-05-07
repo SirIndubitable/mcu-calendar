@@ -72,14 +72,15 @@ def test_get_shows():
 @pytest.mark.parametrize("show_path", os.listdir(os.path.join('data', 'shows')))
 def test_shows_yaml(show_path):
     show = Show.from_yaml(os.path.join('data', 'shows', show_path))
-    assert type(show.title)      is str
-    assert type(show.start_date) is datetime.date
-    assert type(show.weeks)      is int
+    assert type(show.title)       is str
+    assert type(show.start_date)  is datetime.date
+    assert type(show.weeks)       is int
+    assert type(show.description) is str
 
 
 def test_shows_equals():
-    show1 = Show(title= "MY TITLE", start_date= datetime.date(2019, 4, 20), weeks= 7)
-    show2 = Show(title= "MY TITLE", start_date= datetime.date(2019, 4, 20), weeks= 7)
+    show1 = Show(title= "MY TITLE", start_date= datetime.date(2019, 4, 20), weeks= 7, description="Lots of stuff")
+    show2 = Show(title= "MY TITLE", start_date= datetime.date(2019, 4, 20), weeks= 7, description="Lots of stuff")
     assert show1 == show1
     assert show1 == show2
     assert not show1 != show1
@@ -87,24 +88,26 @@ def test_shows_equals():
 
 
 @pytest.mark.parametrize("show_dict", [ 
-    { "title": "MY TITLE 2", "start_date": datetime.date(2019, 4, 20), "weeks": 3},
-    { "title": "MY TITLE", "start_date": datetime.date(2019, 12, 25), "weeks":3},
-    { "title": "MY TITLE", "start_date": datetime.date(2019, 4, 20), "weeks": 9},
+    { "title": "MY TITLE 2", "start_date": datetime.date(2019, 4, 20), "weeks": 3, "description": "Sometimes things happen" },
+    { "title": "MY TITLE", "start_date": datetime.date(2019, 12, 25), "weeks":3, "description": "Sometimes things happen" },
+    { "title": "MY TITLE", "start_date": datetime.date(2019, 4, 20), "weeks": 9, "description": "Sometimes things happen" },
+    { "title": "MY TITLE", "start_date": datetime.date(2019, 4, 20), "weeks": 9, "description": "Nothing ever happens" },
 ])
 def test_shows_not_equals(show_dict):
-    show1 = Show(title= "MY TITLE", start_date= datetime.date(2019, 4, 20), weeks= 3)
+    show1 = Show(title= "MY TITLE", start_date= datetime.date(2019, 4, 20), weeks= 3, description="Sometimes things happen")
     show2 = Show(**show_dict)
     assert not show1 == show2
     assert show1 != show2
 
 
 def test_show_event_equals():
-    show = Show(title= "MY TITLE", start_date= datetime.date(2019, 4, 20), weeks= 20)
+    show = Show(title= "MY TITLE", start_date= datetime.date(2019, 4, 20), weeks= 20, description="Sometimes things happen")
     event = {
         "start": { "date": "2019-04-20" },
         "end": { "date": "2019-04-21" },
         "summary": "MY TITLE",
         "recurrence": [f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT=20;BYDAY=SA"],
+        "description": "Sometimes things happen",
     }
     assert show == event
     assert event == show
@@ -113,12 +116,13 @@ def test_show_event_equals():
 
 
 @pytest.mark.parametrize("event_dict", [ 
-    { "start": { "date": "2019-10-20" }, "end": { "date": "2019-04-21" }, "summary": "MY TITLE", "recurrence": f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA" },
-    { "start": { "date": "2019-04-20" }, "end": { "date": "2019-03-14" }, "summary": "MY TITLE", "recurrence": f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA" },
-    { "start": { "date": "2019-04-20" }, "end": { "date": "2019-04-21" }, "summary": "YOUR TITLE", "recurrence": f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA" },
-    { "start": { "date": "2019-04-20" }, "end": { "date": "2019-04-21" }, "summary": "MY TITLE", "recurrence": f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT=10;BYDAY=SA" },
+    { "start": { "date": "2019-10-20" }, "end": { "date": "2019-04-21" }, "summary": "MY TITLE", "recurrence": f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA", "description": "Sometimes things happen" },
+    { "start": { "date": "2019-04-20" }, "end": { "date": "2019-03-14" }, "summary": "MY TITLE", "recurrence": f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA", "description": "Sometimes things happen" },
+    { "start": { "date": "2019-04-20" }, "end": { "date": "2019-04-21" }, "summary": "YOUR TITLE", "recurrence": f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA", "description": "Sometimes things happen" },
+    { "start": { "date": "2019-04-20" }, "end": { "date": "2019-04-21" }, "summary": "MY TITLE", "recurrence": f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT=10;BYDAY=SA", "description": "Sometimes things happen" },
+    { "start": { "date": "2019-04-20" }, "end": { "date": "2019-04-21" }, "summary": "MY TITLE", "recurrence": f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA", "description": "Nothing ever happens" },
 ])
 def test_show_event_not_equals(event_dict):
-    show = Show(title= "MY TITLE", start_date= datetime.date(2019, 4, 20), weeks= 6)
+    show = Show(title= "MY TITLE", start_date= datetime.date(2019, 4, 20), weeks= 6, description="Sometimes things happen")
     assert not show == event_dict
     assert show != event_dict
