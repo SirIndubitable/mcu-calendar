@@ -279,7 +279,31 @@ def create_google_event(progress_title, items, existing_events, force):
                 progress.print(f"[reset]{item}", "[cyan](Skipping)")
 
 
-def main(args):
+class MockService():
+    """
+    A service that doesn't allow post requests to update the calendar data, but still allows
+    get requests so that the code can run properly
+    """
+    def __init__(self, realService):
+        self.real_service = realService
+
+    # Disable unused argument and missing doc string because these are required to match the methods
+    # That they are Mocking out
+    # pylint: disable=unused-argument,missing-docstring
+    def list(self, **kwargs):
+        return self.real_service.list(**kwargs)
+
+    def update(self, **kwargs):
+        return self
+
+    def insert(self, **kwargs):
+        return self
+
+    def execute(self):
+        pass
+
+
+def main():
     """
     Main method that updates the users google calendar
     """
@@ -291,6 +315,8 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Update a google calendarwith MCU Release info')
     parser.add_argument('--force', action='store_true', help='Force update the existing events')
+    parser.add_argument('--dry', action='store_true', help='A dry run where nothing is updated')
+    args = parser.parse_args()
 
     token_path = os.path.join(os.environ.get("HOME"), "secrets", "service_token.json")
     if os.path.exists(token_path):
@@ -303,4 +329,8 @@ if __name__ == '__main__':
             serviceName= 'calendar',
             version= 'v3',
             credentials= get_local_creds()).events()
-    main(parser.parse_args())
+
+    if args.dry:
+        EVENTS_SERVICE = MockService(EVENTS_SERVICE)
+
+    main()

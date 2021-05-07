@@ -13,6 +13,11 @@ force:
 	$(info ************  Running(force) ************)
 	@python $(PROJECT_NAME)/main.py --force
 
+dry:
+	$(info )
+	$(info ************  Running(force) ************)
+	@python $(PROJECT_NAME)/main.py --dry
+
 test:
 	$(info )
 	$(info ************  Running Tests  ************)
