@@ -29,7 +29,7 @@ lint:
 	@pylint $(PROJECT_NAME)
 
 init:
-	pip install -r requirements.txt
+	pip3 install -r requirements.txt
 
 clean:
 	rm -rf ./$(PROJECT_NAME)/__pycache__/ 
