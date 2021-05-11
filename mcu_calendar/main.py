@@ -3,61 +3,14 @@ This script adds events to a google users calendar for Movies and TV shows defin
 """
 import argparse
 import os
-from google.api_core.client_options import ClientOptions
-from google.auth.exceptions import RefreshError
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
 from rich.progress import Progress, BarColumn, TextColumn, TimeElapsedColumn
 
 from events import Movie, Show
+from google_service_helper import create_service, MockService
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.events']
 EVENTS_SERVICE = None
-
-
-def update_creds_token(creds):
-    """
-    Updates the token.json containing the login token so that when testing
-    it is not required to login constantly
-    """
-    with open('token.json', 'w') as token:
-        token.write(creds.to_json())
-
-
-def get_local_creds():
-    """
-    Gets the google Credentials object in this order:
-    1. Automatically created token.json
-    2. credentials.json file created from https://console.cloud.google.com/
-    """
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-        if creds.valid:
-            return creds
-        if creds.expired and creds.refresh_token:
-            try:
-                creds.refresh(Request())
-                update_creds_token(creds)
-                return creds
-            except RefreshError:
-                pass
-
-    # This is the credentials file that is created from making a project with an
-    # OAuth 2.0 Client ID from
-    if os.path.exists('credentials.json'):
-        flow = InstalledAppFlow.from_client_secrets_file(
-            client_secrets_file='credentials.json',
-            scopes=SCOPES)
-        creds = flow.run_console(access_type='offline', include_granted_scopes='true')
-        update_creds_token(creds)
-        return creds
-
-    raise RuntimeError("Could not load local credentials, add a credentials.json "
-                       "file from https://console.cloud.google.com/")
-
 
 def get_cal_id():
     """
@@ -143,30 +96,6 @@ def create_google_event(progress_title, items, existing_events, force):
                 progress.print(f"[reset]{item}", "[cyan](Skipping)")
 
 
-class MockService():
-    """
-    A service that doesn't allow post requests to update the calendar data, but still allows
-    get requests so that the code can run properly
-    """
-    def __init__(self, realService):
-        self.real_service = realService
-
-    # Disable unused argument and missing doc string because these are required to match the methods
-    # That they are Mocking out
-    # pylint: disable=unused-argument,missing-docstring
-    def list(self, **kwargs):
-        return self.real_service.list(**kwargs)
-
-    def update(self, **kwargs):
-        return self
-
-    def insert(self, **kwargs):
-        return self
-
-    def execute(self):
-        pass
-
-
 def main():
     """
     Main method that updates the users google calendar
@@ -182,18 +111,7 @@ if __name__ == '__main__':
     parser.add_argument('--dry', action='store_true', help='A dry run where nothing is updated')
     args = parser.parse_args()
 
-    token_path = os.path.join(os.environ.get("HOME"), "secrets", "service_token.json")
-    if os.path.exists(token_path):
-        EVENTS_SERVICE = build(
-            serviceName= 'calendar',
-            version= 'v3',
-            client_options=ClientOptions(credentials_file=token_path, scopes=SCOPES)).events()
-    else:
-        EVENTS_SERVICE = build(
-            serviceName= 'calendar',
-            version= 'v3',
-            credentials= get_local_creds()).events()
-
+    EVENTS_SERVICE = create_service(SCOPES)
     if args.dry:
         EVENTS_SERVICE = MockService(EVENTS_SERVICE)
 
