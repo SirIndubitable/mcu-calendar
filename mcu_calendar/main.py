@@ -1,8 +1,8 @@
 """
 This script adds events to a google users calendar for Movies and TV shows defined in ./data/
 """
-import argparse
 import os
+from argparse import ArgumentParser
 from rich.progress import Progress, BarColumn, TextColumn, TimeElapsedColumn
 
 from events import Movie, Show
@@ -36,6 +36,7 @@ def get_google_events():
     """
     events_result = EVENTS_SERVICE.list(calendarId=get_cal_id()).execute()
     return events_result.get('items', [])
+
 
 def get_objects_from_data(folder_name, factory):
     """
@@ -85,7 +86,9 @@ def create_google_event(progress_title, items, existing_events, force):
             event = find(existing_events, lambda e: 'summary' in e and e['summary'] == item.title)
             if event is None:
                 progress.print(f"[reset]{item}", "[red](Adding)")
-                EVENTS_SERVICE.insert(calendarId=calendar_id, body=item.to_google_event()).execute()
+                EVENTS_SERVICE.insert(
+                    calendarId=calendar_id,
+                    body=item.to_google_event()).execute()
             elif item != event or force:
                 progress.print(f"[reset]{item}", "[yellow](Updating)")
                 EVENTS_SERVICE.update(
@@ -106,7 +109,7 @@ def main():
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Update a google calendarwith MCU Release info')
+    parser = ArgumentParser(description='Update a google calendarwith MCU Release info')
     parser.add_argument('--force', action='store_true', help='Force update the existing events')
     parser.add_argument('--dry', action='store_true', help='A dry run where nothing is updated')
     args = parser.parse_args()
