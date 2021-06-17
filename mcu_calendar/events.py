@@ -74,7 +74,7 @@ class Movie(GoogleMediaEvent):
     def _to_google_event_core(self):
         return {
             "start": { "date": self.release_date.isoformat() },
-            "end": { "date": self.release_date.isoformat() },
+            "end": { "date": (self.release_date + datetime.timedelta(days=1)).isoformat() },
             "summary": self.title,
         }
 

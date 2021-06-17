@@ -39,7 +39,7 @@ def test_movie_event_equals():
     movie = Movie(title= "MY TITLE", release_date= datetime.date(2019, 4, 20), description= "stuff happens")
     event = {
         "start": { "date": "2019-04-20" },
-        "end": { "date": "2019-04-20" },
+        "end": { "date": "2019-04-21" },
         "summary": "MY TITLE",
         "description": "stuff happens",
     }
@@ -50,10 +50,10 @@ def test_movie_event_equals():
 
 
 @pytest.mark.parametrize("event_dict", [ 
-    { "start": { "date": "2019-10-20" }, "end": { "date": "2019-04-20" }, "summary": "MY TITLE", "description": "stuff happens" },
+    { "start": { "date": "2019-10-20" }, "end": { "date": "2019-04-21" }, "summary": "MY TITLE", "description": "stuff happens" },
     { "start": { "date": "2019-04-20" }, "end": { "date": "2019-03-14" }, "summary": "MY TITLE", "description": "stuff happens" },
-    { "start": { "date": "2019-04-20" }, "end": { "date": "2019-04-20" }, "summary": "YOUR TITLE", "description": "stuff happens" },
-    { "start": { "date": "2019-04-20" }, "end": { "date": "2019-04-20" }, "summary": "MY TITLE", "description": "Something happens" },
+    { "start": { "date": "2019-04-20" }, "end": { "date": "2019-04-21" }, "summary": "YOUR TITLE", "description": "stuff happens" },
+    { "start": { "date": "2019-04-20" }, "end": { "date": "2019-04-21" }, "summary": "MY TITLE", "description": "Something happens" },
 ])
 def test_movie_event_not_equals(event_dict):
     movie = Movie(title= "MY TITLE", release_date= datetime.date(2019, 4, 20), description= "stuff happens")
