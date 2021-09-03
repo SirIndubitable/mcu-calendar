@@ -67,6 +67,9 @@ class MockService():
     def update(self, **kwargs):
         return self
 
+    def delete_event(self, **kwargs):
+        return self
+
     def insert(self, **kwargs):
         return self
 

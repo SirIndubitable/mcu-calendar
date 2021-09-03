@@ -84,14 +84,16 @@ def create_google_event(progress_title, items, existing_events, force):
                 EVENTS_SERVICE.insert(
                     calendarId=calendar_id,
                     body=item.to_google_event()).execute()
-            elif item != event or force:
-                progress.print(f"[reset]{item}", "[yellow](Updating)")
-                EVENTS_SERVICE.update(
-                    calendarId=calendar_id,
-                    eventId=event["id"],
-                    body=item.to_google_event()).execute()
             else:
-                progress.print(f"[reset]{item}", "[cyan](Skipping)")
+                existing_events.remove(event)
+                if item != event or force:
+                    progress.print(f"[reset]{item}", "[yellow](Updating)")
+                    EVENTS_SERVICE.update(
+                        calendarId=calendar_id,
+                        eventId=event["id"],
+                        body=item.to_google_event()).execute()
+                else:
+                    progress.print(f"[reset]{item}", "[cyan](Skipping)")
 
 
 def main():
@@ -101,6 +103,12 @@ def main():
     events = get_google_events()
     create_google_event("[bold]Movies..", get_movies(), events, force=args.force)
     create_google_event("[bold]Shows...", get_shows(), events, force=args.force)
+
+    calendar_id = get_cal_id()
+    with create_progress() as progress:
+        for old_event in progress.track(events, description="Stale events"):
+            progress.print(f"[reset]{old_event['summary']}", "[red](Deleting)")
+            EVENTS_SERVICE.delete_event(calendarId=calendar_id, eventId=old_event["id"])
 
 
 if __name__ == '__main__':
