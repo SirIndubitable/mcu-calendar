@@ -15,7 +15,7 @@ force:
 
 dry:
 	$(info )
-	$(info ************  Running(force) ************)
+	$(info ************  Running(dry)   ************)
 	@python $(PROJECT_NAME)/main.py --dry
 
 test:
