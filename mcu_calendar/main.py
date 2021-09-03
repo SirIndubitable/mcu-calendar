@@ -3,10 +3,10 @@ This script adds events to a google users calendar for Movies and TV shows defin
 """
 import os
 from argparse import ArgumentParser
-from rich.progress import Progress, BarColumn, TextColumn, TimeElapsedColumn
 
 from events import Movie, Show
 from google_service_helper import create_service, MockService
+from general_helpers import create_progress
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.events']
@@ -75,14 +75,9 @@ def create_google_event(progress_title, items, existing_events, force):
     Creates or Updates events if needed on the calendar based on the items objects
     """
     calendar_id = get_cal_id()
-    progress = Progress(
-        TextColumn(progress_title),
-        BarColumn(),
-        "[progress.percentage]{task.percentage:>3.0f}%",
-        TimeElapsedColumn())
     items.sort(key=lambda i: i.sort_val())
-    with progress:
-        for item in progress.track(items):
+    with create_progress() as progress:
+        for item in progress.track(items, description=progress_title):
             event = find(existing_events, lambda e: 'summary' in e and e['summary'] == item.title)
             if event is None:
                 progress.print(f"[reset]{item}", "[red](Adding)")
