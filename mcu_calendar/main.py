@@ -38,7 +38,7 @@ def get_google_events():
     return events_result.get('items', [])
 
 
-def get_objects_from_data(folder_name, factory):
+def get_objects_from_yaml(folder_name, factory):
     """
     Loads all of the objects defined in yaml files in ./data/{{folder_name}}
     """
@@ -46,18 +46,18 @@ def get_objects_from_data(folder_name, factory):
     return [factory(os.path.join(dir_path, filename)) for filename in os.listdir(dir_path)]
 
 
-def get_movies():
+def get_yaml_movies():
     """
     Gets all Movie objects defined in the yaml files in ./data/movies
     """
-    return get_objects_from_data('movies', Movie.from_yaml)
+    return get_objects_from_yaml('movies', Movie.from_yaml)
 
 
-def get_shows():
+def get_yaml_shows():
     """
     Gets all Show objects defined in the yaml files in ./data/shows
     """
-    return get_objects_from_data('shows', Show.from_yaml)
+    return get_objects_from_yaml('shows', Show.from_yaml)
 
 
 def find(seq, predicate):

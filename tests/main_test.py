@@ -6,12 +6,12 @@ from main import *
 
 
 def test_get_movies():
-    movies = get_movies()
+    movies = get_yaml_movies()
     assert len(movies) == len(os.listdir(os.path.join('data', 'movies')))
 
 
 def test_get_shows():
-    shows = get_shows()
+    shows = get_yaml_shows()
     assert len(shows) == len(os.listdir(os.path.join('data', 'shows')))
 
 
