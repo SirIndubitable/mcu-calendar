@@ -32,7 +32,7 @@ init:
 	pip3 install -r requirements.txt
 
 clean:
-	rm -rf ./$(PROJECT_NAME)/__pycache__/ 
+	rm -rf ./$(PROJECT_NAME)/__pycache__/
 	rm -rf ./tests/__pycache__/
 	rm -rf ./.pytest_cache/
 	rm -rf ./build/
