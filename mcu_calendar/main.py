@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 
 from events import Movie, Show
 from google_service_helper import create_service, MockService
+from imdb_helper import get_mcu_media
 from general_helpers import create_progress
 
 # If modifying these scopes, delete the file token.json.
@@ -60,6 +61,16 @@ def get_yaml_shows():
     return get_objects_from_yaml('shows', Show.from_yaml)
 
 
+def get_imdb_media():
+    """
+    Gets Movie and Show objects from IMDB
+    """
+    (imdb_movies, _) = get_mcu_media()
+    movies = [Movie.from_imdb(m) for m in imdb_movies]
+    shows = None
+    return (movies, shows)
+
+
 def find(seq, predicate):
     """
     Finds the first element in seq that predicate return true for
@@ -101,8 +112,9 @@ def main():
     Main method that updates the users google calendar
     """
     events = get_google_events()
-    create_google_event("[bold]Movies..", get_movies(), events, force=args.force)
-    create_google_event("[bold]Shows...", get_shows(), events, force=args.force)
+    (imdb_movies, _) = get_imdb_media()
+    create_google_event("[bold]Movies..", imdb_movies, events, force=args.force)
+    create_google_event("[bold]Shows...", get_yaml_shows(), events, force=args.force)
 
     calendar_id = get_cal_id()
     with create_progress() as progress:

@@ -71,6 +71,18 @@ class Movie(GoogleMediaEvent):
             yaml_data = yaml.load(yaml_file, Loader=yaml.Loader)
         return Movie(**yaml_data)
 
+    @staticmethod
+    def from_imdb(imdb_data):
+        """
+        Factory method to create a Movie object from IMDB data
+        """
+        release_date = imdb_data['release dates']['USA']
+        description = f"https://www.imdb.com/title/tt{imdb_data.movieID}"
+        return Movie(
+            title=imdb_data['title'],
+            description=description,
+            release_date=release_date)
+
     def _to_google_event_core(self):
         return {
             "start": { "date": self.release_date.isoformat() },
