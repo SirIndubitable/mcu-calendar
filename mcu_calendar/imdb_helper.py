@@ -3,7 +3,7 @@ This script provides helper methods for accessing IMDB data about the MCU
 """
 from datetime import datetime
 from imdb import IMDb
-from general_helpers import create_progress
+from .general_helpers import create_progress
 
 __IMDB__ = IMDb()
 

@@ -1,8 +1,6 @@
-import pytest
 import datetime
-import sys, os
-sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/../mcu_calendar"))
-import imdb_helper
+import pytest
+import mcu_calendar.imdb_helper as imdb_helper
 
 
 def test_IMDB():

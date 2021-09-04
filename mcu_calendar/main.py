@@ -4,10 +4,10 @@ This script adds events to a google users calendar for Movies and TV shows defin
 import os
 from argparse import ArgumentParser
 
-from events import Movie, Show
-from google_service_helper import create_service, MockService
-from imdb_helper import get_mcu_media
-from general_helpers import create_progress
+from .events import Movie, Show
+from .google_service_helper import create_service, MockService
+from .imdb_helper import get_mcu_media
+from .general_helpers import create_progress
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.events']

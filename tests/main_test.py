@@ -1,9 +1,6 @@
+import os
 import pytest
-import datetime
-import sys, os
-sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/../mcu_calendar"))
-from main import *
-
+from mcu_calendar.main import *
 
 def test_get_movies():
     movies = get_yaml_movies()

@@ -1,8 +1,7 @@
-import pytest
 import datetime
-import sys, os
-sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/../mcu_calendar"))
-from events import *
+import os
+import pytest
+from mcu_calendar.events import Movie, Show
 
 #======================================
 # Tests for events.Movie
