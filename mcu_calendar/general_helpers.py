@@ -13,3 +13,13 @@ def create_progress():
         BarColumn(),
         "[progress.percentage]{task.percentage:>3.0f}%",
         TimeElapsedColumn())
+
+
+def find(seq, predicate):
+    """
+    Finds the first element in seq that predicate return true for
+    """
+    for item in seq:
+        if predicate(item):
+            return item
+    return None

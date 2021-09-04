@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 from .events import Movie, Show
 from .google_service_helper import create_service, MockService
 from .imdb_helper import get_mcu_media
-from .general_helpers import create_progress
+from .general_helpers import create_progress, find
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.events']
@@ -69,16 +69,6 @@ def get_imdb_media():
     movies = [Movie.from_imdb(m) for m in imdb_movies]
     shows = None
     return (movies, shows)
-
-
-def find(seq, predicate):
-    """
-    Finds the first element in seq that predicate return true for
-    """
-    for item in seq:
-        if predicate(item):
-            return item
-    return None
 
 
 def create_google_event(progress_title, items, existing_events, force):
