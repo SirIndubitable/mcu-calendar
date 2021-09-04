@@ -28,6 +28,7 @@ def get_mcu_media():
         media = []
         for title in progress.track(titles, description="Querying IMDB"):
             media.append(__IMDB__.get_movie(title.movieID, info=['main', 'release dates']))
+    media = [m for m in media if 'kind' in m]
     movies = [m for m in media if m['kind'] == 'movie']
     tv_shows = [m for m in media if m['kind'] != 'movie']
     for movie in movies:
