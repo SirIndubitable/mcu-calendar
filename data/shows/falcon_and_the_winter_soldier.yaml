@@ -1,6 +1,8 @@
 title: The Falcon and the Winter Soldier
-start_date: 2021-03-19
-weeks: 6
+seasons:
+  - num: 1
+    start_date: 2021-03-19
+    weeks: 6
 description: |
   https://www.imdb.com/title/tt9208876
   https://www.marvel.com/tv-shows/the-falcon-and-the-winter-soldier/1

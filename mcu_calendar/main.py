@@ -58,17 +58,22 @@ def get_yaml_shows():
     """
     Gets all Show objects defined in the yaml files in ./data/shows
     """
-    return get_objects_from_yaml('shows', Show.from_yaml)
+    shows_by_season = get_objects_from_yaml('shows', Show.from_yaml)
+    return [season for show in shows_by_season for season in show]
 
 
 def get_imdb_media():
     """
     Gets Movie and Show objects from IMDB
     """
-    (imdb_movies, _) = get_mcu_media()
-    movies = [Movie.from_imdb(m) for m in imdb_movies]
-    shows = None
-    return (movies, shows)
+    (imdb_movies, imdb_shows) = get_mcu_media()
+    movies = [Movie.from_imdb(movie) for movie in imdb_movies]
+    shows = [Show.from_imdb(show) for show in imdb_shows]
+    shows = [season for show in shows for season in show]
+    return (
+        [m for m in movies if m.release_date is not None],
+        [s for s in shows if s.start_date is not None]
+    )
 
 
 def create_google_event(progress_title, items, existing_events, force):
@@ -102,9 +107,9 @@ def main():
     Main method that updates the users google calendar
     """
     events = get_google_events()
-    (imdb_movies, _) = get_imdb_media()
+    (imdb_movies, imdb_shows) = get_imdb_media()
     create_google_event("[bold]Movies..", imdb_movies, events, force=args.force)
-    create_google_event("[bold]Shows...", get_yaml_shows(), events, force=args.force)
+    create_google_event("[bold]Shows...", imdb_shows, events, force=args.force)
 
     calendar_id = get_cal_id()
     with create_progress() as progress:

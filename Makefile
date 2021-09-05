@@ -6,17 +6,17 @@ all: test lint run
 run:
 	$(info )
 	$(info ************  Running        ************)
-	@python $(PROJECT_NAME)/main.py
+	@python -m $(PROJECT_NAME).main
 
 force:
 	$(info )
 	$(info ************  Running(force) ************)
-	@python $(PROJECT_NAME)/main.py --force
+	@python -m $(PROJECT_NAME).main --force
 
 dry:
 	$(info )
 	$(info ************  Running(dry)   ************)
-	@python $(PROJECT_NAME)/main.py --dry
+	@python -m $(PROJECT_NAME).main --dry
 
 test:
 	$(info )

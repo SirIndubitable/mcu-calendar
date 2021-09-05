@@ -24,17 +24,23 @@ def get_mcu_media():
     Gets all of the movies and release dates with the MCU tag from IMDB
     """
     titles = _get_mcu_titles()
+    infosets = ['main', 'release dates']
     with create_progress() as progress:
         media = []
         for title in progress.track(titles, description="Querying IMDB"):
-            media.append(__IMDB__.get_movie(title.movieID, info=['main', 'release dates']))
-    media = [m for m in media if 'kind' in m]
-    movies = [m for m in media if m['kind'] == 'movie']
-    tv_shows = [m for m in media if m['kind'] != 'movie']
-    for movie in movies:
-        _fix_movie_release_date(movie)
-    for tv_show in tv_shows:
-        __IMDB__.update(tv_show, 'episodes')
+            media.append(__IMDB__.get_movie(title.movieID, info=infosets))
+        media = [m for m in media if 'kind' in m]
+        movies = [m for m in media if m['kind'] == 'movie']
+        tv_shows = [m for m in media if m['kind'] != 'movie']
+
+        for movie in movies:
+            _fix_movie_release_date(movie)
+
+        for tv_show in progress.track(tv_shows, description="Querying Season Info"):
+            __IMDB__.update(tv_show, 'episodes')
+            for _, episodes in tv_show['episodes'].items():
+                __IMDB__.update(episodes[1], 'release dates')
+                _fix_movie_release_date(episodes[1])
 
     return (movies, tv_shows)
 
@@ -44,12 +50,16 @@ def _fix_movie_release_date(movie):
     Parses out strings in the form of "USA::16 August 2021" into dictionary entries in
     the form of { "USA": datetime.date(2021, 8, 16) }
     """
+    if 'release dates' not in movie:
+        return
+
     dates = {}
     for release_str in movie['release dates']:
         vals = release_str.split(':')
         country_str = vals[0]
         try:
-            date = datetime.strptime(vals[-1], "%d %B %Y").date()
+            date_str = vals[-1].replace('(internet)', '').strip()
+            date = datetime.strptime(date_str, "%d %B %Y").date()
         except ValueError:
             continue
         dates[country_str] = date

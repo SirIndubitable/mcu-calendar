@@ -1,6 +1,8 @@
 title: WandaVision
-start_date: 2021-01-15
-weeks: 8
+seasons:
+  - num: 1
+    start_date: 2021-01-15
+    weeks: 8
 description: |
   https://www.imdb.com/title/tt9140560
   https://www.marvel.com/tv-shows/wandavision/1

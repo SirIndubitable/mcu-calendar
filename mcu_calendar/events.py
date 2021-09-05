@@ -3,6 +3,7 @@ Google Event objects that represent different media release events
 """
 import datetime
 import yaml
+from .general_helpers import find
 
 def truncate(string, length):
     """
@@ -15,8 +16,27 @@ class GoogleMediaEvent():
     """
     Base class for a google event that is defined in yaml
     """
-    def __init__(self, description):
-        self.description = description
+    def __init__(self, data):
+        self.data = data
+
+    # def data_is(self, type_check):
+    #     """
+    #     checks what the backing datatype of this class is
+    #     """
+    #     datatype = 'imdb' if 'movieID' in self.data \
+    #           else 'yaml'
+    #     return datatype == type_check
+
+    @property
+    def description(self):
+        """
+        The description property
+        """
+        if 'description' in self.data:
+            return self.data['description']
+        if 'movieID' in self.data:
+            return f"https://www.imdb.com/title/tt{self.data.movieID}"
+        return None
 
     def to_google_event(self):
         """
@@ -57,10 +77,23 @@ class Movie(GoogleMediaEvent):
     """
     The event that describes a movie release date
     """
-    def __init__(self, title, description, release_date):
-        super().__init__(description)
-        self.title = title
-        self.release_date = release_date
+    @property
+    def title(self):
+        """
+        The title property
+        """
+        return self.data['title']
+
+    @property
+    def release_date(self):
+        """
+        The original release date property
+        """
+        if 'release_date' in self.data:
+            return self.data['release_date']
+        if 'release dates' in self.data and 'USA' in self.data['release dates']:
+            return self.data['release dates']['USA']
+        return None
 
     @staticmethod
     def from_yaml(yaml_path):
@@ -69,19 +102,14 @@ class Movie(GoogleMediaEvent):
         """
         with open(yaml_path, 'r', encoding='UTF-8') as yaml_file:
             yaml_data = yaml.load(yaml_file, Loader=yaml.Loader)
-        return Movie(**yaml_data)
+        return Movie(yaml_data)
 
     @staticmethod
     def from_imdb(imdb_data):
         """
         Factory method to create a Movie object from IMDB data
         """
-        release_date = imdb_data['release dates']['USA']
-        description = f"https://www.imdb.com/title/tt{imdb_data.movieID}"
-        return Movie(
-            title=imdb_data['title'],
-            description=description,
-            release_date=release_date)
+        return Movie(imdb_data)
 
     def _to_google_event_core(self):
         return {
@@ -105,18 +133,55 @@ class Movie(GoogleMediaEvent):
            and event["summary"]       == other["summary"]
 
     def __str__(self):
-        return f"{truncate(self.title, 26)} {self.release_date.strftime('%b %d, %Y')}"
+        return f"{truncate(self.title, 36)} {self.release_date.strftime('%b %d, %Y')}"
 
 
 class Show(GoogleMediaEvent):
     """
     The event that describes a show start date and how many weeks it runs for
     """
-    def __init__(self, title, start_date, weeks, description):
-        super().__init__(description)
-        self.title = title
-        self.start_date = start_date
-        self.weeks = weeks
+    def __init__(self, data, season_num):
+        super().__init__(data)
+        self.season_num = season_num
+
+    @property
+    def title(self):
+        """
+        The title property
+        """
+        #return f"{self.data['title']} season {self.season_num}"
+        return self.data['title']
+
+    @property
+    def start_date(self):
+        """
+        The season start date property
+        """
+        if 'start_date' in self.season:
+            return self.season['start_date']
+        if 'release dates' in self.season[1] and 'USA' in self.season[1]['release dates']:
+            return self.season[1]['release dates']['USA']
+        return None
+
+    @property
+    def weeks(self):
+        """
+        The property for number of weeks
+        """
+        if 'weeks' in self.season:
+            return self.season['weeks']
+        return len(self.season)
+
+    @property
+    def season(self):
+        """
+        The property of the season information
+        """
+        if 'seasons' in self.data and isinstance(self.data['seasons'], list):
+            return find(self.data['seasons'], lambda s: s['num'] == self.season_num)
+        if 'episodes' in self.data and isinstance(self.data['episodes'], dict):
+            return self.data['episodes'][self.season_num]
+        return None
 
     @staticmethod
     def from_yaml(yaml_path):
@@ -125,7 +190,14 @@ class Show(GoogleMediaEvent):
         """
         with open(yaml_path, 'r', encoding='UTF-8') as yaml_file:
             yaml_data = yaml.load(yaml_file, Loader=yaml.Loader)
-        return Show(**yaml_data)
+        return [Show(yaml_data, season['num']) for season in yaml_data['seasons']]
+
+    @staticmethod
+    def from_imdb(imdb_data):
+        """
+        Factory method to create a Show object from IMDB data
+        """
+        return [Show(imdb_data, season) for season in imdb_data['episodes'].keys()]
 
     def _rfc5545_weekday(self):
         _recurrence_weekday = [ "MO", "TU", "WE", "TH", "FR", "SA", "SU" ]
@@ -158,4 +230,4 @@ class Show(GoogleMediaEvent):
            and event["recurrence"]    == other["recurrence"]
 
     def __str__(self):
-        return f"{truncate(self.title, 26)} {self.start_date.strftime('%b %d, %Y')}"
+        return f"{truncate(self.title, 36)} {self.start_date.strftime('%b %d, %Y')}"
