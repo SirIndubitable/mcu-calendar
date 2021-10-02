@@ -20,7 +20,7 @@ def get_cal_id():
     2. From GOOGLE_MCU_CALENDAR_ID environment variable
     """
     if os.path.exists('cal_id.txt'):
-        with open('cal_id.txt', 'r') as reader:
+        with open('cal_id.txt', 'r', encoding='UTF-8') as reader:
             return reader.read().strip()
     if 'GOOGLE_MCU_CALENDAR_ID' in os.environ:
         return os.environ['GOOGLE_MCU_CALENDAR_ID']

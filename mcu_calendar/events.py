@@ -67,7 +67,7 @@ class Movie(GoogleMediaEvent):
         """
         Factory method to create a Movie object from yaml
         """
-        with open(yaml_path, 'r') as yaml_file:
+        with open(yaml_path, 'r', encoding='UTF-8') as yaml_file:
             yaml_data = yaml.load(yaml_file, Loader=yaml.Loader)
         return Movie(**yaml_data)
 
@@ -111,7 +111,7 @@ class Show(GoogleMediaEvent):
         """
         Factory method to create a Show object from yaml
         """
-        with open(yaml_path, 'r') as yaml_file:
+        with open(yaml_path, 'r', encoding='UTF-8') as yaml_file:
             yaml_data = yaml.load(yaml_file, Loader=yaml.Loader)
         return Show(**yaml_data)
 
