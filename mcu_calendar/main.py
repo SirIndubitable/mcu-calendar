@@ -69,7 +69,7 @@ def get_imdb_media():
     (imdb_movies, imdb_shows) = get_mcu_media()
     movies = [Movie.from_imdb(movie) for movie in imdb_movies]
     shows = [Show.from_imdb(show) for show in imdb_shows]
-    shows = [season for show in shows for season in show]
+    # shows = [season for show in shows for season in show]
     return (
         [m for m in movies if m.release_date is not None],
         [s for s in shows if s.start_date is not None]
@@ -94,6 +94,8 @@ def create_google_event(progress_title, items, existing_events, force):
                 existing_events.remove(event)
                 if item != event or force:
                     progress.print(f"[reset]{item}", "[yellow](Updating)")
+                    # progress.print(item.to_google_event())
+                    # progress.print(event)
                     EVENTS_SERVICE.update(
                         calendarId=calendar_id,
                         eventId=event["id"],

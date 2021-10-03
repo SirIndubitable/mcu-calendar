@@ -34,8 +34,10 @@ class GoogleMediaEvent():
         """
         if 'description' in self.data:
             return self.data['description']
-        if 'movieID' in self.data:
-            return f"https://www.imdb.com/title/tt{self.data.movieID}"
+        if 'id' in self.data:
+            return f"https://www.imdb.com/title/{self.data['id']}"
+        if 'imDbId' in self.data:
+            return f"https://www.imdb.com/title/{self.data['imDbId']}"
         return None
 
     def to_google_event(self):
@@ -65,9 +67,10 @@ class GoogleMediaEvent():
         """
 
     def __eq__(self, other):
-        if isinstance(other, GoogleMediaEvent):
-            return self.description == other.description
-        return self.description == (other["description"] if "description" in other else "")
+        return True
+        # if isinstance(other, GoogleMediaEvent):
+        #     return self.description == other.description
+        # return self.description == (other["description"] if "description" in other else "")
 
     def __ne__(self, other):
         return not self == other
@@ -91,9 +94,21 @@ class Movie(GoogleMediaEvent):
         """
         if 'release_date' in self.data:
             return self.data['release_date']
-        if 'release dates' in self.data and 'USA' in self.data['release dates']:
-            return self.data['release dates']['USA']
+        if 'releaseDate' in self.data:
+            return datetime.date.fromisoformat(self.data['releaseDate']) + datetime.timedelta(days=1)
         return None
+
+    def to_yaml(self, yaml_path):
+        """
+        Serializes a Movie event into a yaml file
+        """
+        with open(yaml_path, 'w') as yaml_file:
+            data = {
+                'title':  self.title,
+                "release_date": self.release_date,
+                "description": self.description
+            }
+            yaml.dump(data, yaml_file)
 
     @staticmethod
     def from_yaml(yaml_path):
@@ -123,14 +138,20 @@ class Movie(GoogleMediaEvent):
 
     def __eq__(self, other):
         if not super().__eq__(other):
+            print("base not equal")
             return False
         if isinstance(other, Movie):
             return self.title        == other.title       \
                and self.release_date == other.release_date
         event = self.to_google_event()
-        return event["start"]["date"] == other["start"]["date"] \
-           and event["end"]["date"]   == other["end"]["date"]   \
-           and event["summary"]       == other["summary"]
+        if event["summary"] != other["summary"]:
+            print(f"{event['summary']} != {other['summary']}")
+            return False
+        if event["start"]["date"] != other["start"]["date"] \
+        or event["end"]["date"]   != other["end"]["date"]:
+            print(f"{event['start']['date']} != {other['start']['date']}")
+            return False
+        return True
 
     def __str__(self):
         return f"{truncate(self.title, 36)} {self.release_date.strftime('%b %d, %Y')}"
@@ -140,10 +161,6 @@ class Show(GoogleMediaEvent):
     """
     The event that describes a show start date and how many weeks it runs for
     """
-    def __init__(self, data, season_num):
-        super().__init__(data)
-        self.season_num = season_num
-
     @property
     def title(self):
         """
@@ -157,31 +174,42 @@ class Show(GoogleMediaEvent):
         """
         The season start date property
         """
-        if 'start_date' in self.season:
-            return self.season['start_date']
-        if 'release dates' in self.season[1] and 'USA' in self.season[1]['release dates']:
-            return self.season[1]['release dates']['USA']
-        return None
+        try:
+            return Show._episode_release(self.data['episodes'][0])
+        except TypeError:
+            return None
+        except ValueError:
+            return None
+
+    @staticmethod
+    def _episode_release(episode):
+        return datetime.datetime.strptime(episode['released'], "%d %b. %Y").date()
 
     @property
     def weeks(self):
         """
         The property for number of weeks
         """
-        if 'weeks' in self.season:
-            return self.season['weeks']
-        return len(self.season)
+        try:
+            dates = [Show._episode_release(episode) for episode in self.data['episodes']]
+            time_delta = max(dates) - min(dates)
+            return (time_delta.days / 7) + 1
+        except TypeError:
+            return 0
+        except ValueError:
+            return 0
 
-    @property
-    def season(self):
+    def to_yaml(self, yaml_path):
         """
-        The property of the season information
+        Serializes a Show event into a yaml file
         """
-        if 'seasons' in self.data and isinstance(self.data['seasons'], list):
-            return find(self.data['seasons'], lambda s: s['num'] == self.season_num)
-        if 'episodes' in self.data and isinstance(self.data['episodes'], dict):
-            return self.data['episodes'][self.season_num]
-        return None
+        with open(yaml_path, 'w') as yaml_file:
+            data = {
+                'title':  self.title,
+                "release_date": self.release_date,
+                "description": self.description
+            }
+            yaml.dump(data, yaml_file)
 
     @staticmethod
     def from_yaml(yaml_path):
@@ -197,7 +225,7 @@ class Show(GoogleMediaEvent):
         """
         Factory method to create a Show object from IMDB data
         """
-        return [Show(imdb_data, season) for season in imdb_data['episodes'].keys()]
+        return Show(imdb_data)
 
     def _rfc5545_weekday(self):
         _recurrence_weekday = [ "MO", "TU", "WE", "TH", "FR", "SA", "SU" ]
@@ -209,7 +237,7 @@ class Show(GoogleMediaEvent):
             "start": { "date": self.start_date.isoformat() },
             "end": { "date": (self.start_date + datetime.timedelta(days=1)).isoformat() },
             "recurrence": [
-                f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT={self.weeks};BYDAY={self._rfc5545_weekday()}"
+                f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT={self.weeks:.0f};BYDAY={self._rfc5545_weekday()}"
             ],
         }
 
@@ -218,16 +246,24 @@ class Show(GoogleMediaEvent):
 
     def __eq__(self, other):
         if not super().__eq__(other):
+            print("base not equal")
             return False
         if isinstance(other, Show):
             return self.title      == other.title      \
                and self.start_date == other.start_date \
                and self.weeks      == other.weeks
         event = self.to_google_event()
-        return event["summary"]       == other["summary"]       \
-           and event["start"]["date"] == other["start"]["date"] \
-           and event["end"]["date"]   == other["end"]["date"]   \
-           and event["recurrence"]    == other["recurrence"]
+        if event["summary"] != other["summary"]:
+            print(f"{event['summary']} != {other['summary']}")
+            return False
+        if event["start"]["date"] != other["start"]["date"] \
+        or event["end"]["date"]   != other["end"]["date"]:
+            print(f"{event['start']['date']} != {other['start']['date']}")
+            return False
+        if event["recurrence"] != other["recurrence"]:
+            print(f"{event['recurrence']} != {other['recurrence']}")
+            return False
+        return True
 
     def __str__(self):
         return f"{truncate(self.title, 36)} {self.start_date.strftime('%b %d, %Y')}"
