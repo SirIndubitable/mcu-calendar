@@ -11,21 +11,30 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9.7'
+
       - name: Install Python Requirements
         run: make init
 
       - name: Lint everything
         run: make lint
-        
+
       - name: Run tests
         run: make test
 
   run:
     needs: test
     runs-on: ubuntu-latest
+    container: python:3.9.7
     environment: run
     steps:
       - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9.7'
 
       - name: Install Python Requirements
         run: make init
