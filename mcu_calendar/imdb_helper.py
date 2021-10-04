@@ -1,9 +1,11 @@
 """
 This script provides helper methods for accessing IMDB data about the MCU
 """
+import os
+import json
 from datetime import datetime
 # from imdb import IMDb
-from .general_helpers import create_progress
+from .general_helpers import create_progress, find
 
 # __IMDB__ = IMDb()
 #
@@ -558,30 +560,34 @@ spider_man = {
 }
 
 
-import json
 
 def _request_imdb(api, query, progress):
     try:
+        # progress.console.print(f"   {query}")
         response = requests.request('GET', f"https://imdb-api.com/en/API/{api}/k_yoi2scp8/{query}")
-        return response.json()
+        response_data = response.json()
+        if response_data["errorMessage"] is not "":
+            raise RuntimeError(response_data["errorMessage"])
     except json.decoder.JSONDecodeError:
         progress.console.print(f"   {response.text}")
         return None
 
-import os;
 
-def get_mcu_media():
+def get_mcu_media(existing_movie_titles, existing_shows):
     """
     Gets mcu data from imdb-api.com
     """
-    if os.path.isfile('./movies.json') and os.path.isfile('./shows.json'):
-        with open('./movies.json', 'r', encoding='utf-8') as f:
-            movies = json.load(f)
-        with open('./shows.json', 'r', encoding='utf-8') as f:
-            show_seasons = json.load(f)
+    if False:
+        pass
+    # if os.path.isfile('./movies.json') and os.path.isfile('./shows.json'):
+    #     with open('./movies.json', 'r', encoding='utf-8') as f:
+    #         movies = json.load(f)
+    #     with open('./shows.json', 'r', encoding='utf-8') as f:
+    #         show_seasons = json.load(f)
     else:
         with create_progress() as progress:
-            mcu_item = _request_imdb("Keyword"," marvel-cinematic-universe", progress)['items']
+            mcu_item = _request_imdb("Keyword", "marvel-cinematic-universe", progress)['items']
+            mcu_item = [item for item in mcu_item if item['title'] not in existing_movie_titles]
             mcu_item.sort(key=lambda i: i['title'])
             media = [_request_imdb("Title", item['id'], progress) for item in progress.track(mcu_item, description="Getting MCU Titles...")]
             media = [m for m in media if m is not None]
@@ -589,11 +595,13 @@ def get_mcu_media():
             shows = [m for m in media if m["type"] == "TVSeries"]
             show_seasons = []
             for show in progress.track(shows, description="Getting Show info..."):
+                existing_show = find(existing_shows, lambda s: s.title == show['title'])
                 for season in progress.track(show['tvSeriesInfo']['seasons'], description="Getting season info..."):
-                    show_seasons.append(_request_imdb("SeasonEpisodes", f"{show['id']}/{season}", progress))
-        with open('./movies.json', 'w', encoding='utf-8') as f:
-            json.dump(movies, f, ensure_ascii=False, indent=4)
-        with open('./shows.json', 'w', encoding='utf-8') as f:
-            json.dump(show_seasons, f, ensure_ascii=False, indent=4)
+                    if existing_show is None or int(season) in [s['num'] for s in existing_show.data['seasons']]:
+                        show_seasons.append(_request_imdb("SeasonEpisodes", f"{show['id']}/{season}", progress))
+        # with open('./movies.json', 'w', encoding='utf-8') as f:
+        #     json.dump(movies, f, ensure_ascii=False, indent=4)
+        # with open('./shows.json', 'w', encoding='utf-8') as f:
+        #     json.dump(show_seasons, f, ensure_ascii=False, indent=4)
 
     return (movies, show_seasons)

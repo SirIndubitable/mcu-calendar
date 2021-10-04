@@ -3,11 +3,12 @@ This script adds events to a google users calendar for Movies and TV shows defin
 """
 import os
 from argparse import ArgumentParser
+from datetime import date, datetime
 
 from .events import Movie, Show
 from .google_service_helper import create_service, MockService
 from .imdb_helper import get_mcu_media
-from .general_helpers import create_progress, find
+from .general_helpers import create_progress, find, truncate
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.events']
@@ -58,22 +59,22 @@ def get_yaml_shows():
     """
     Gets all Show objects defined in the yaml files in ./data/shows
     """
-    shows_by_season = get_objects_from_yaml('shows', Show.from_yaml)
-    return [season for show in shows_by_season for season in show]
+    return get_objects_from_yaml('shows', Show.from_yaml)
 
 
-def get_imdb_media():
+def event_to_str(event):
     """
-    Gets Movie and Show objects from IMDB
+    Converts a google event to a string
     """
-    (imdb_movies, imdb_shows) = get_mcu_media()
-    movies = [Movie.from_imdb(movie) for movie in imdb_movies]
-    shows = [Show.from_imdb(show) for show in imdb_shows]
-    # shows = [season for show in shows for season in show]
-    return (
-        [m for m in movies if m.release_date is not None],
-        [s for s in shows if s.start_date is not None]
-    )
+    return f"{truncate(event['summary'], 36)} {date.fromisoformat(event['start']['date']).strftime('%b %d, %Y')}"
+
+
+def event_needs_updated(event, item):
+    for (key, value) in item.items():
+        if event[key] != value:
+            print(key)
+            return True
+    return False
 
 
 def create_google_event(progress_title, items, existing_events, force):
@@ -81,27 +82,25 @@ def create_google_event(progress_title, items, existing_events, force):
     Creates or Updates events if needed on the calendar based on the items objects
     """
     calendar_id = get_cal_id()
-    items.sort(key=lambda i: i.sort_val())
+    items.sort(key=lambda i: date.fromisoformat(i['start']['date']))
     with create_progress() as progress:
         for item in progress.track(items, description=progress_title):
-            event = find(existing_events, lambda e: 'summary' in e and e['summary'] == item.title)
+            event = find(existing_events, lambda e: 'summary' in e and e['summary'] == item['summary'])
             if event is None:
-                progress.print(f"[reset]{item}", "[red](Adding)")
+                progress.print(f"[reset]{event_to_str(item)}", "[red](Adding)")
                 EVENTS_SERVICE.insert(
                     calendarId=calendar_id,
-                    body=item.to_google_event()).execute()
+                    body=item).execute()
             else:
                 existing_events.remove(event)
-                if item != event or force:
-                    progress.print(f"[reset]{item}", "[yellow](Updating)")
-                    # progress.print(item.to_google_event())
-                    # progress.print(event)
+                if event_needs_updated(event, item) or force:
+                    progress.print(f"[reset]{event_to_str(item)}", "[yellow](Updating)")
                     EVENTS_SERVICE.update(
                         calendarId=calendar_id,
                         eventId=event["id"],
-                        body=item.to_google_event()).execute()
+                        body=item).execute()
                 else:
-                    progress.print(f"[reset]{item}", "[cyan](Skipping)")
+                    progress.print(f"[reset]{event_to_str(item)}", "[cyan](Skipping)")
 
 
 def main():
@@ -109,14 +108,38 @@ def main():
     Main method that updates the users google calendar
     """
     events = get_google_events()
-    (imdb_movies, imdb_shows) = get_imdb_media()
-    create_google_event("[bold]Movies..", imdb_movies, events, force=args.force)
-    create_google_event("[bold]Shows...", imdb_shows, events, force=args.force)
+    yaml_movies = get_yaml_movies()
+    yaml_shows = get_yaml_shows()
+    (imdb_movies, imdb_shows) = get_mcu_media([movie.title for movie in yaml_movies], [show.title for show in yaml_shows])
+    for imdb_movie in imdb_movies:
+        yaml_movies.append(Movie({
+            "title": imdb_movie['title'],
+            "release_date": imdb_movie['releaseDate'],
+            "description": f"https://www.imdb.com/title/{imdb_movie['id']}"
+        }))
+    for imdb_show in imdb_shows:
+        yaml_show = find(yaml_shows, lambda s: s.title == imdb_show['title'])
+        if yaml_show is None:
+            yaml_show = Show({
+                "title": imdb_show['title'],
+                "seasons": [],
+                "description": f"https://www.imdb.com/title/{imdb_show['imDbId']}"
+            })
+            yaml_shows.append(yaml_show)
+        season = imdb_show['episodes'][0]
+        yaml_show.data['seasons'].append({
+            "num": season['seasonNumber'],
+            "start_date": datetime.strptime(season['released'], "%d %b. %Y").date().isoformat(),
+            "weeks": len(imdb_show['episodes'])})
 
+    movies = [m.to_google_event() for m in yaml_movies]
+    shows = [season for show in yaml_shows for season in show.to_google_event()]
+    create_google_event("[bold]Movies..", movies, events, force=args.force)
+    create_google_event("[bold]Shows...", shows, events, force=args.force)
     calendar_id = get_cal_id()
     with create_progress() as progress:
         for old_event in progress.track(events, description="Stale events"):
-            progress.print(f"[reset]{old_event['summary']}", "[red](Deleting)")
+            progress.print(f"[reset]{event_to_str(old_event)}", "[red](Deleting)")
             EVENTS_SERVICE.delete_event(calendarId=calendar_id, eventId=old_event["id"])
 
 

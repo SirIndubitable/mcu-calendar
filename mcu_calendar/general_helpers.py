@@ -23,3 +23,10 @@ def find(seq, predicate):
         if predicate(item):
             return item
     return None
+
+
+def truncate(string, length):
+    """
+    Truncates a string to a given length with "..." at the end if needed
+    """
+    return string[:(length-3)].ljust(length, ".")
