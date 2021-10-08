@@ -14,7 +14,7 @@ def update_creds_token(creds):
     Updates the token.json containing the login token so that when testing
     it is not required to login constantly
     """
-    with open('token.json', 'w', encoding='UTF-8') as token:
+    with open('token.json', 'w', encoding='utf-8') as token:
         token.write(creds.to_json())
 
 

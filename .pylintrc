@@ -6,3 +6,4 @@ ignored-modules=
 disable=
     cell-var-from-loop,
     global-statement,
+    no-value-for-parameter,
