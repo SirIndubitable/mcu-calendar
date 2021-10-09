@@ -148,7 +148,7 @@ def main():
         events.sort(key=lambda i: date.fromisoformat(i['start']['date']))
         for old_event in progress.track(events, description="Stale events"):
             progress.print(f"[reset]{event_to_str(old_event)}", "[red](Deleting)")
-            EVENTS_SERVICE.delete_event(calendarId=calendar_id, eventId=old_event["id"])
+            EVENTS_SERVICE.delete(calendarId=calendar_id, eventId=old_event["id"]).execute()
 
 
 if __name__ == '__main__':
