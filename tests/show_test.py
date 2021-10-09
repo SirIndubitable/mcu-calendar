@@ -63,7 +63,8 @@ def test_show_to_google_event():
                 f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT=1{i};BYDAY={_rfc5545_weekday(start_date)}"
             ],
             'extendedProperties': { 'shared': {
-                'tmdb_id': 'id'
+                'tmdb_id': 'id',
+                'season_number': i
             }}
         }
         assert event_objects[i-1] == expected_event

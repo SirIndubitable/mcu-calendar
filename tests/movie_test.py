@@ -44,8 +44,8 @@ def test_movie_to_google_event():
         "start": { "date": '2019-04-20' },
         "end": { "date": '2019-04-21' },
         "summary": 'title',
-        'extendedProperties.shared': {
+        'extendedProperties': { 'shared': {
             'tmdb_id': 'id'
-        },
+        }},
     }
     assert movie.to_google_event() == expected_event

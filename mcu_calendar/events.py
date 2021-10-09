@@ -52,9 +52,9 @@ class Movie(ABC):
             "start": { "date": self.release_date.isoformat() },
             "end": { "date": (self.release_date + timedelta(days=1)).isoformat() },
             "summary": self.title,
-            'extendedProperties.shared': {
-                'tmdb_id': self.tmdb_id
-            },
+            'extendedProperties': { 'shared': {
+                'tmdb_id': str(self.tmdb_id)
+            }},
         }
 
 
@@ -186,7 +186,8 @@ class Show(ABC):
                     f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT={self.weeks(season):.0f};BYDAY={weekday}"
                 ],
                 'extendedProperties': { 'shared': {
-                    'tmdb_id': self.tmdb_id
+                    'tmdb_id': str(self.tmdb_id),
+                    'season_number': str(season_num),
                 }},
             })
         return events
