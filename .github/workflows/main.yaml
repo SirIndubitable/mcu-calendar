@@ -29,7 +29,6 @@ jobs:
   run:
     needs: test
     runs-on: ubuntu-latest
-    container: python:3.9.7
     environment: run
     steps:
       - uses: actions/checkout@v2
