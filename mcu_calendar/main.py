@@ -77,7 +77,7 @@ def event_needs_updated(event, item):
     if it isn't then event needs to be updated
     """
     for (key, value) in item.items():
-        if event[key] != value:
+        if event.get(key) != value:
             return True
     return False
 

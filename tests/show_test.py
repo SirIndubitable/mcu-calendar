@@ -64,7 +64,7 @@ def test_show_to_google_event():
             ],
             'extendedProperties': { 'shared': {
                 'tmdb_id': 'id',
-                'season_number': i
+                'season_number': str(i)
             }}
         }
         assert event_objects[i-1] == expected_event
