@@ -43,6 +43,7 @@ def discover_movies(discoverer, page):
     Discovers movies from TMDB on all pages
     """
     return discoverer.discover_movies({
+        'region': 'US',
         "with_keywords": KEYWORD_MCU,
         'without_keywords': KEYWORD_SHORT_FILM,
         'without_genres': GENRE_DOCUMENTERY,
@@ -56,6 +57,7 @@ def discover_shows(discoverer, page):
     Discovers shows from TMDB on all pages
     """
     return discoverer.discover_tv_shows({
+        'region': 'US',
         'language': 'en-US',
         'include_null_first_air_dates': False,
         'with_keywords': KEYWORD_MCU,
