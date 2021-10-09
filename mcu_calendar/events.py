@@ -2,7 +2,7 @@
 Google Event objects that represent different media release events
 """
 from abc import ABC, abstractmethod
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from yaml import load, dump, Loader, Dumper
 
 def _rfc5545_weekday(date_to_convert):
@@ -68,8 +68,12 @@ class TmdbMovie(Movie):
 
     @property
     def description(self):
-        descr = self.tmdb.overview
-        descr += "\n\nhttps://www.themoviedb.org/tv/{self.tmdb.id}"
+        if self.release_date <= (datetime.now().date() - timedelta(days=7)):
+            descr = self.tmdb.overview
+            descr += "\n\n"
+        else:
+            descr = ""
+        descr += f"https://www.themoviedb.org/tv/{self.tmdb.id}"
         return descr
 
     @property
