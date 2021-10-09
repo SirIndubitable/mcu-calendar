@@ -203,7 +203,7 @@ class TmdbShow(Show):
     @property
     def description(self):
         descr = self.tmdb.overview
-        descr += "\n\nhttps://www.themoviedb.org/tv/{self.tmdb.id}"
+        descr += f"\n\nhttps://www.themoviedb.org/tv/{self.tmdb.id}"
         if self.tmdb.external_ids.imdb_id:
             descr += f"\nhttps://www.imdb.com/title/{self.tmdb.external_ids.imdb_id}"
         return descr
