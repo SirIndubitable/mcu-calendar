@@ -1,7 +1,7 @@
-pytest
-pylint
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib
-pyyaml
-rich
+pytest==6.2.4
+pylint==2.8.2
+google-api-python-client==2.3.0
+google-auth-httplib2==0.1.0
+google-auth-oauthlib==0.4.4
+pyyaml==5.4.1
+rich==10.1.0
