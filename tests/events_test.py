@@ -1,8 +1,12 @@
-import pytest
 import datetime
-import sys, os
+import os
+import sys
+
+import pytest
+
 sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/../mcu_calendar"))
 from events import *
+
 
 #======================================
 # Tests for events.Movie
@@ -23,7 +27,7 @@ def test_movies_equals():
     assert not movie1 != movie2
 
 
-@pytest.mark.parametrize("movie_dict", [ 
+@pytest.mark.parametrize("movie_dict", [
     { "title": "MY TITLE 2", "release_date": datetime.date(2019, 4, 20), "description": "stuff happens"},
     { "title": "MY TITLE", "release_date": datetime.date(2019, 12, 25), "description": "stuff happens"},
     { "title": "MY TITLE", "release_date": datetime.date(2019, 4, 20), "description": "nothing happens"},
@@ -49,7 +53,7 @@ def test_movie_event_equals():
     assert not event != movie
 
 
-@pytest.mark.parametrize("event_dict", [ 
+@pytest.mark.parametrize("event_dict", [
     { "start": { "date": "2019-10-20" }, "end": { "date": "2019-04-21" }, "summary": "MY TITLE", "description": "stuff happens" },
     { "start": { "date": "2019-04-20" }, "end": { "date": "2019-03-14" }, "summary": "MY TITLE", "description": "stuff happens" },
     { "start": { "date": "2019-04-20" }, "end": { "date": "2019-04-21" }, "summary": "YOUR TITLE", "description": "stuff happens" },
@@ -82,7 +86,7 @@ def test_shows_equals():
     assert not show1 != show2
 
 
-@pytest.mark.parametrize("show_dict", [ 
+@pytest.mark.parametrize("show_dict", [
     { "title": "MY TITLE 2", "start_date": datetime.date(2019, 4, 20), "weeks": 3, "description": "Sometimes things happen" },
     { "title": "MY TITLE", "start_date": datetime.date(2019, 12, 25), "weeks":3, "description": "Sometimes things happen" },
     { "title": "MY TITLE", "start_date": datetime.date(2019, 4, 20), "weeks": 9, "description": "Sometimes things happen" },
@@ -110,7 +114,7 @@ def test_show_event_equals():
     assert not event != show
 
 
-@pytest.mark.parametrize("event_dict", [ 
+@pytest.mark.parametrize("event_dict", [
     { "start": { "date": "2019-10-20" }, "end": { "date": "2019-04-21" }, "summary": "MY TITLE", "recurrence": f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA", "description": "Sometimes things happen" },
     { "start": { "date": "2019-04-20" }, "end": { "date": "2019-03-14" }, "summary": "MY TITLE", "recurrence": f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA", "description": "Sometimes things happen" },
     { "start": { "date": "2019-04-20" }, "end": { "date": "2019-04-21" }, "summary": "YOUR TITLE", "recurrence": f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA", "description": "Sometimes things happen" },

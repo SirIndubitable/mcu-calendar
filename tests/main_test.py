@@ -1,6 +1,9 @@
-import pytest
 import datetime
-import sys, os
+import os
+import sys
+
+import pytest
+
 sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/../mcu_calendar"))
 from main import *
 
