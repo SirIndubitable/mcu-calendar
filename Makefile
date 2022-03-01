@@ -26,8 +26,8 @@ test:
 lint:
 	$(info )
 	$(info ************  Linting        ************)
-	@pylint $(PROJECT_NAME)
-	@flake8 $(PROJECT_NAME) --config ./setup.cfg
+	pylint $(PROJECT_NAME)
+	flake8 $(PROJECT_NAME) --config ./setup.cfg
 
 init:
 	pip3 install -r requirements.txt

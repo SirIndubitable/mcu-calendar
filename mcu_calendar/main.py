@@ -1,117 +1,89 @@
 """
 This script adds events to a google users calendar for Movies and TV shows defined in ./data/
 """
-import os
 from argparse import ArgumentParser
+from pathlib import Path
 
-from events import Movie, Show
+import yaml
 from google_service_helper import MockService, create_service
-from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
+from yamlcalendar import YamlCalendar
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
-EVENTS_SERVICE = None
 
 
-def get_cal_id():
+def get_cal_ids():
     """
     Gets the ID of the calender that this script should write to.  This ID should
     belong to the user that logged in from get_google_creds()
-    1. From the cal_id.txt file
-    2. From GOOGLE_MCU_CALENDAR_ID environment variable
+    This tries to pull from a cal_id.yaml file first, for easy overriding when debuuging
+    or running locally
     """
-    if os.path.exists("cal_id.txt"):
-        with open("cal_id.txt", "r", encoding="UTF-8") as reader:
-            return reader.read().strip()
-    if "GOOGLE_MCU_CALENDAR_ID" in os.environ:
-        return os.environ["GOOGLE_MCU_CALENDAR_ID"]
+    cal_id_path = Path("cal_id.yaml")
+    if cal_id_path.exists():
+        with open(cal_id_path, "r", encoding="UTF-8") as reader:
+            try:
+                return yaml.safe_load(reader)
+            except yaml.YAMLError as exc:
+                print(exc)
 
     # This would normally be secret, but this project is so people can add this calendar
     # to their calendars, and this information is on the iCal url, so why hide it?
-    return "unofficial.mcu.calendar@gmail.com"
+    return {
+        "mcu": "unofficial.mcu.calendar@gmail.com",
+        "mcu-movies": "6t5rvfalpq6oejmd53jats1ir4@group.calendar.google.com",
+        "mcu-shows": "kkgjb6avtmbocime1ecos0d49c@group.calendar.google.com",
+        "mcu-adjacent": "a28nf2scue1viptdqoiv33g718@group.calendar.google.com",
+        "dceu": "g8i6h4j0978715cl0o6amilsb0@group.calendar.google.com",
+    }
 
 
-def get_google_events():
-    """
-    Gets all of the events currently on the calender from get_cal_id()
-    """
-    events_result = EVENTS_SERVICE.list(calendarId=get_cal_id()).execute()
-    return events_result.get("items", [])
-
-
-def get_objects_from_data(folder_name, factory):
-    """
-    Loads all of the objects defined in yaml files in ./data/{{folder_name}}
-    """
-    dir_path = os.path.join("data", folder_name)
-    return [factory(os.path.join(dir_path, filename)) for filename in os.listdir(dir_path)]
-
-
-def get_movies():
-    """
-    Gets all Movie objects defined in the yaml files in ./data/movies
-    """
-    return get_objects_from_data("movies", Movie.from_yaml)
-
-
-def get_shows():
-    """
-    Gets all Show objects defined in the yaml files in ./data/shows
-    """
-    return get_objects_from_data("shows", Show.from_yaml)
-
-
-def find(seq, predicate):
-    """
-    Finds the first element in seq that predicate return true for
-    """
-    for item in seq:
-        if predicate(item):
-            return item
-    return None
-
-
-def create_google_event(progress_title, items, existing_events, force):
-    """
-    Creates or Updates events if needed on the calendar based on the items objects
-    """
-    calendar_id = get_cal_id()
-    progress = Progress(
-        TextColumn(progress_title), BarColumn(), "[progress.percentage]{task.percentage:>3.0f}%", TimeElapsedColumn()
-    )
-    items.sort(key=lambda i: i.sort_val())
-    with progress:
-        for item in progress.track(items):
-            event = find(existing_events, lambda e: "summary" in e and e["summary"] == item.title)
-            if event is None:
-                progress.print(f"[reset]{item}", "[red](Adding)")
-                EVENTS_SERVICE.insert(calendarId=calendar_id, body=item.to_google_event()).execute()
-            elif item != event or force:
-                progress.print(f"[reset]{item}", "[yellow](Updating)")
-                EVENTS_SERVICE.update(
-                    calendarId=calendar_id, eventId=event["id"], body=item.to_google_event()
-                ).execute()
-            else:
-                progress.print(f"[reset]{item}", "[cyan](Skipping)")
-
-
-def main():
+def main(dry: bool, force: bool):
     """
     Main method that updates the users google calendar
     """
-    events = get_google_events()
-    create_google_event("[bold]Movies..", get_movies(), events, force=args.force)
-    create_google_event("[bold]Shows...", get_shows(), events, force=args.force)
+    service = create_service(SCOPES)
+    if dry:
+        service = MockService(service)
+
+    ids = get_cal_ids()
+    data = Path("data")
+    calendars = [
+        YamlCalendar(
+            "MCU Calendar",
+            ids["mcu"],
+            [data / "movies"],
+            [data / "shows"],
+            service,
+        ),
+        # YamlCalendar(
+        #     "MCU Movies Calendar",
+        #     ids["mcu-movies"],
+        #     [data / "movies"],
+        #     [],
+        #     service,
+        # ),
+        # YamlCalendar(
+        #     "MCU Shows Calendar",
+        #     ids["mcu-shows"],
+        #     [],
+        #     [data / "shows"],
+        #     service,
+        # ),
+    ]
+
+    for cal in calendars:
+        cal.create_google_events(force)
 
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Update a google calendarwith MCU Release info")
-    parser.add_argument("--force", action="store_true", help="Force update the existing events")
-    parser.add_argument("--dry", action="store_true", help="A dry run where nothing is updated")
+    parser.add_argument(
+        "--force", action="store_true", help="Force update the existing events"
+    )
+    parser.add_argument(
+        "--dry", action="store_true", help="A dry run where nothing is updated"
+    )
     args = parser.parse_args()
 
-    EVENTS_SERVICE = create_service(SCOPES)
-    if args.dry:
-        EVENTS_SERVICE = MockService(EVENTS_SERVICE)
-
-    main()
+    main(args.dry, args.force)

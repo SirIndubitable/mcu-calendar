@@ -1,7 +1,7 @@
 """
 Helper methods for creating google api client services
 """
-import os
+from pathlib import Path
 
 from google.api_core.client_options import ClientOptions
 from google.auth.exceptions import RefreshError
@@ -26,8 +26,9 @@ def get_local_creds(scopes):
     1. Automatically created token.json
     2. credentials.json file created from https://console.cloud.google.com/
     """
-    if os.path.exists("token.json"):
-        creds = Credentials.from_authorized_user_file("token.json", scopes)
+    token_path = Path("token.json")
+    if token_path.exists():
+        creds = Credentials.from_authorized_user_file(str(token_path), scopes)
         if creds.valid:
             return creds
         if creds.expired and creds.refresh_token:
@@ -40,9 +41,10 @@ def get_local_creds(scopes):
 
     # This is the credentials file that is created from making a project with an
     # OAuth 2.0 Client ID from
-    if os.path.exists("credentials.json"):
+    creds_path = Path("credentials.json")
+    if creds_path.exists():
         flow = InstalledAppFlow.from_client_secrets_file(
-            client_secrets_file="credentials.json", scopes=scopes
+            client_secrets_file=str(creds_path), scopes=scopes
         )
         creds = flow.run_console(access_type="offline", include_granted_scopes="true")
         update_creds_token(creds)
@@ -83,12 +85,14 @@ def create_service(scopes):
     """
     Creates a service with the given scopes, and uses either a service token or local credentials
     """
-    token_path = os.path.join(os.environ.get("HOME"), "secrets", "service_token.json")
-    if os.path.exists(token_path):
+    token_path = Path("~").resolve() / "secrets" / "service_token.json"
+    if token_path.exists():
         return build(
             serviceName="calendar",
             version="v3",
-            client_options=ClientOptions(credentials_file=token_path, scopes=scopes),
+            client_options=ClientOptions(
+                credentials_file=str(token_path), scopes=scopes
+            ),
         ).events()
 
     return build(
