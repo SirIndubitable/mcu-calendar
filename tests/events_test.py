@@ -12,7 +12,14 @@ from mcu_calendar.events import Movie, Show
 # ======================================
 # Tests for events.Movie
 # ======================================
-@pytest.mark.parametrize("movie_path", (Path("data") / "movies").iterdir())
+@pytest.mark.parametrize(
+    "movie_path",
+    [
+        *(Path("data") / "mcu-movies").iterdir(),
+        *(Path("data") / "mcu-adjacent-movies").iterdir(),
+        *(Path("data") / "dceu-movies").iterdir(),
+    ],
+)
 def test_movies_yaml(movie_path: Path):
     movie = Movie.from_yaml(movie_path)
     assert isinstance(movie.title, str)
@@ -128,7 +135,13 @@ def test_movie_event_not_equals(event_dict):
 # ======================================
 # Tests for events.Show
 # ======================================
-@pytest.mark.parametrize("show_path", (Path("data") / "shows").iterdir())
+@pytest.mark.parametrize(
+    "show_path",
+    [
+        *(Path("data") / "mcu-shows").iterdir(),
+        *(Path("data") / "starwars-shows").iterdir(),
+    ],
+)
 def test_shows_yaml(show_path: Path):
     show = Show.from_yaml(show_path)
     assert isinstance(show.title, str)
