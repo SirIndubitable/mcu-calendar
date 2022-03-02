@@ -1,17 +1,18 @@
 """
 Pytests for yamlcalendar.py
 """
-import os
 from pathlib import Path
 
 from mcu_calendar.yamlcalendar import YamlCalendar
 
 
 def test_get_movies():
-    movies = YamlCalendar._get_movies(Path("data") / "movies")
-    assert len(movies) == len(os.listdir(os.path.join("data", "movies")))
+    path = Path("data") / "movies"
+    movies = YamlCalendar._get_movies(path)
+    assert len(movies) == len([p for p in path.iterdir()])
 
 
 def test_get_shows():
-    shows = YamlCalendar._get_shows(Path("data") / "shows")
-    assert len(shows) == len(os.listdir(os.path.join("data", "shows")))
+    path = Path("data") / "shows"
+    shows = YamlCalendar._get_shows(path)
+    assert len(shows) == len([p for p in path.iterdir()])
