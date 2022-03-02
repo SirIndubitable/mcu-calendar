@@ -32,6 +32,12 @@ For each calendar I will list the URl and if you would like to add it directly t
 ### MCU
 https://calendar.google.com/calendar/embed?src=unofficial.mcu.calendar%40gmail.com
 `https://calendar.google.com/calendar/ical/unofficial.mcu.calendar%40gmail.com/public/basic.ics`
+### MCU Movies
+https://calendar.google.com/calendar/embed?src=6t5rvfalpq6oejmd53jats1ir4%40group.calendar.google.com
+`https://calendar.google.com/calendar/ical/6t5rvfalpq6oejmd53jats1ir4%40group.calendar.google.com/public/basic.ics`
+### MCU Shows
+https://calendar.google.com/calendar/embed?src=kkgjb6avtmbocime1ecos0d49c%40group.calendar.google.com
+`https://calendar.google.com/calendar/ical/kkgjb6avtmbocime1ecos0d49c%40group.calendar.google.com/public/basic.ics`
 
 ## Contributing
 

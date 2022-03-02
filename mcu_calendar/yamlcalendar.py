@@ -80,9 +80,12 @@ class YamlCalendar:
         with progress:
             for item in progress.track(items):
                 event = next(
-                    e
-                    for e in existing_events
-                    if "summary" in e and e["summary"] == item.title
+                    (
+                        e
+                        for e in existing_events
+                        if "summary" in e and e["summary"] == item.title
+                    ),
+                    None,
                 )
                 if event is None:
                     progress.print(f"[reset]{item}", "[red](Adding)")
