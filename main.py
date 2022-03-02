@@ -34,6 +34,9 @@ def get_cal_ids():
         "mcu": "unofficial.mcu.calendar@gmail.com",
         "mcu-movies": "6t5rvfalpq6oejmd53jats1ir4@group.calendar.google.com",
         "mcu-shows": "kkgjb6avtmbocime1ecos0d49c@group.calendar.google.com",
+        "mcu-adjacent": "a28nf2scue1viptdqoiv33g718@group.calendar.google.com",
+        "dceu": "g8i6h4j0978715cl0o6amilsb0@group.calendar.google.com",
+        "starwars": "tion8rl7er63ptn06ef4sio86o@group.calendar.google.com",
     }
 
 
@@ -49,24 +52,45 @@ def main(dry: bool, force: bool):
     data = Path("data")
     calendars = [
         YamlCalendar(
-            "MCU Calendar",
+            "MCU",
             ids["mcu"],
             [data / "mcu-movies"],
             [data / "mcu-shows"],
             service,
         ),
         YamlCalendar(
-            "MCU Movies Calendar",
+            "MCU Movies",
             ids["mcu-movies"],
             [data / "mcu-movies"],
             [],
             service,
         ),
         YamlCalendar(
-            "MCU Shows Calendar",
+            "MCU Shows",
             ids["mcu-shows"],
             [],
             [data / "mcu-shows"],
+            service,
+        ),
+        YamlCalendar(
+            "MCU Adjacent Movies",
+            ids["mcu-shows"],
+            [data / "mcu-adjacent-movies"],
+            [],
+            service,
+        ),
+        YamlCalendar(
+            "DCEU",
+            ids["dceu"],
+            [data / "dceu-movies"],
+            [],
+            service,
+        ),
+        YamlCalendar(
+            "Starwars",
+            ids["starwars"],
+            [],
+            [data / "starwars-shows"],
             service,
         ),
     ]

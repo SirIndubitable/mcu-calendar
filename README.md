@@ -3,22 +3,6 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
-    <li>
-      <a href="#Calendars">Calendars</a>
-      <ul>
-        <li><a href="#mcu">MCU</a></li>
-        <li><a href="#mcu-movies">MCU Movies</a></li>
-      </ul>
-    </li>
-    <li><a href="#contributing">Contributing</a></li>
-  </ol>
-</details>
-
-
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 This started out as just a script to upload MCU release dates to a Google Calender.
@@ -26,6 +10,8 @@ Previously I've found calendars that other people maintained manually that event
 The intention of this repo is that the release information can be crowd sourced and easy to pick up if I ever drop the ball on maintaing it.
 
 I've had many requests for other calenders so I've added support for other calendars.
+
+Note: I don't personally folloow all of these release dates that closely, so please let me know if something is missing or goes out of date
 
 ## Calendars
 For each calendar I will list the URl and if you would like to add it directly to your calender, the public iCal address will also be listed
@@ -38,6 +24,15 @@ https://calendar.google.com/calendar/embed?src=6t5rvfalpq6oejmd53jats1ir4%40grou
 ### MCU Shows
 https://calendar.google.com/calendar/embed?src=kkgjb6avtmbocime1ecos0d49c%40group.calendar.google.com
 `https://calendar.google.com/calendar/ical/kkgjb6avtmbocime1ecos0d49c%40group.calendar.google.com/public/basic.ics`
+### MCU Adjacent Movies (Sony, etc.)
+https://calendar.google.com/calendar/embed?src=a28nf2scue1viptdqoiv33g718%40group.calendar.google.com
+`https://calendar.google.com/calendar/ical/a28nf2scue1viptdqoiv33g718%40group.calendar.google.com/public/basic.ics`
+### DC Extended Universe
+https://calendar.google.com/calendar/embed?src=g8i6h4j0978715cl0o6amilsb0%40group.calendar.google.com
+`https://calendar.google.com/calendar/ical/g8i6h4j0978715cl0o6amilsb0%40group.calendar.google.com/public/basic.ics`
+### Star Wars Shows
+https://calendar.google.com/calendar/embed?src=tion8rl7er63ptn06ef4sio86o%40group.calendar.google.com
+`https://calendar.google.com/calendar/ical/tion8rl7er63ptn06ef4sio86o%40group.calendar.google.com/public/basic.ics`
 
 ## Contributing
 
