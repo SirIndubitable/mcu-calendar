@@ -32,8 +32,6 @@ def get_cal_ids():
     # to their calendars, and this information is on the iCal url, so why hide it?
     return {
         "mcu": "unofficial.mcu.calendar@gmail.com",
-        "mcu-movies": "6t5rvfalpq6oejmd53jats1ir4@group.calendar.google.com",
-        "mcu-shows": "kkgjb6avtmbocime1ecos0d49c@group.calendar.google.com",
     }
 
 
@@ -52,20 +50,6 @@ def main(dry: bool, force: bool):
             "MCU Calendar",
             ids["mcu"],
             [data / "movies"],
-            [data / "shows"],
-            service,
-        ),
-        YamlCalendar(
-            "MCU Movies Calendar",
-            ids["mcu-movies"],
-            [data / "movies"],
-            [],
-            service,
-        ),
-        YamlCalendar(
-            "MCU Shows Calendar",
-            ids["mcu-shows"],
-            [],
             [data / "shows"],
             service,
         ),
