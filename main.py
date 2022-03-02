@@ -5,8 +5,9 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 import yaml
-from google_service_helper import MockService, create_service
-from yamlcalendar import YamlCalendar
+
+from mcu_calendar.google_service_helper import MockService, create_service
+from mcu_calendar.yamlcalendar import YamlCalendar
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/calendar.events"]

@@ -2,7 +2,3 @@
 ignored-modules=
     google,
     googleapiclient,
-
-disable=
-    cell-var-from-loop,
-    global-statement,

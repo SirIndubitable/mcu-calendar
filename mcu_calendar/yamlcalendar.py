@@ -2,20 +2,11 @@
 Calendars objects that sync data to a google Calendar
 """
 from pathlib import Path
-from typing import Any, Callable, List
+from typing import Any, Callable, Dict, List
 
-from events import Movie, Show
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
-
-def find(seq, predicate):
-    """
-    Finds the first element in seq that predicate return true for
-    """
-    for item in seq:
-        if predicate(item):
-            return item
-    return None
+from .events import GoogleMediaEvent, Movie, Show
 
 
 # pylint: disable=too-few-public-methods
@@ -62,14 +53,20 @@ class YamlCalendar:
         """
         return YamlCalendar._get_objects_from_data(folder, Show.from_yaml)
 
-    def _get_google_events(self):
+    def _get_google_events(self) -> List[Dict]:
         """
         Gets all of the events currently on the calender from get_cal_id()
         """
         events_result = self.google_service.list(calendarId=self.cal_id).execute()
         return events_result.get("items", [])
 
-    def _create_google_event(self, progress_title, items, existing_events, force):
+    def _create_google_event(
+        self,
+        progress_title: str,
+        items: List[GoogleMediaEvent],
+        existing_events: List[Dict],
+        force: bool,
+    ):
         """
         Creates or Updates events if needed on the calendar based on the items objects
         """
@@ -82,9 +79,10 @@ class YamlCalendar:
         items.sort(key=lambda i: i.sort_val())
         with progress:
             for item in progress.track(items):
-                event = find(
-                    existing_events,
-                    lambda e: "summary" in e and e["summary"] == item.title,
+                event = next(
+                    e
+                    for e in existing_events
+                    if "summary" in e and e["summary"] == item.title
                 )
                 if event is None:
                     progress.print(f"[reset]{item}", "[red](Adding)")
