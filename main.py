@@ -51,14 +51,14 @@ def main(dry: bool, force: bool):
         YamlCalendar(
             "MCU Calendar",
             ids["mcu"],
-            [data / "movies"],
-            [data / "shows"],
+            [data / "mcu-movies"],
+            [data / "mcu-shows"],
             service,
         ),
         YamlCalendar(
             "MCU Movies Calendar",
             ids["mcu-movies"],
-            [data / "movies"],
+            [data / "mcu-movies"],
             [],
             service,
         ),
@@ -66,7 +66,7 @@ def main(dry: bool, force: bool):
             "MCU Shows Calendar",
             ids["mcu-shows"],
             [],
-            [data / "shows"],
+            [data / "mcu-shows"],
             service,
         ),
     ]
