@@ -1,22 +1,23 @@
 PROJECT_NAME := mcu_calendar
-SOURCE :=  $(wildcard $(PROJECT_NAME)/**/*.py) $(wildcard $(PROJECT_NAME)/*.py)
+SOURCE :=  $(wildcard *.py) $(wildcard $(PROJECT_NAME)/*.py) $(wildcard $(PROJECT_NAME)/**/*.py)
+TEST_SOURCE := $(wildcard tests/**/*.py) $(wildcard tests/*.py)
 
 all: test lint run
 
 run:
 	$(info )
 	$(info ************  Running        ************)
-	@python $(PROJECT_NAME)/main.py
+	@python main.py
 
 force:
 	$(info )
 	$(info ************  Running(force) ************)
-	@python $(PROJECT_NAME)/main.py --force
+	@python main.py --force
 
 dry:
 	$(info )
 	$(info ************  Running(force) ************)
-	@python $(PROJECT_NAME)/main.py --dry
+	@python main.py --dry
 
 test:
 	$(info )
@@ -26,13 +27,14 @@ test:
 lint:
 	$(info )
 	$(info ************  Linting        ************)
-	@pylint $(PROJECT_NAME)
+	pylint $(SOURCE) --score=no
+	flake8 $(SOURCE) $(TEST_SOURCE) --config ./setup.cfg
 
 init:
 	pip3 install -r requirements.txt
 
 clean:
-	rm -rf ./$(PROJECT_NAME)/__pycache__/ 
+	rm -rf ./$(PROJECT_NAME)/__pycache__/
 	rm -rf ./tests/__pycache__/
 	rm -rf ./.pytest_cache/
 	rm -rf ./build/

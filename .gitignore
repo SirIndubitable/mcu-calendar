@@ -6,7 +6,7 @@ __pycache__/
 # Secrets
 credentials.json
 token.json
-cal_id.txt
+cal_id.yaml
 
 # C extensions
 *.so
