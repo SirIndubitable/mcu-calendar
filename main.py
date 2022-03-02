@@ -36,7 +36,7 @@ def get_cal_ids():
         "mcu-shows": "kkgjb6avtmbocime1ecos0d49c@group.calendar.google.com",
         "mcu-adjacent": "a28nf2scue1viptdqoiv33g718@group.calendar.google.com",
         "dceu": "g8i6h4j0978715cl0o6amilsb0@group.calendar.google.com",
-        "starwars": "tion8rl7er63ptn06ef4sio86o@group.calendar.google.com",
+        "starwars": "9apr3vur3hcfkafq8s36njhkhs@group.calendar.google.com",
     }
 
 
