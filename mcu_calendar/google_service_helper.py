@@ -85,7 +85,7 @@ def create_service(scopes):
     """
     Creates a service with the given scopes, and uses either a service token or local credentials
     """
-    token_path = Path("~").resolve() / "secrets" / "service_token.json"
+    token_path = Path.home() / "secrets" / "service_token.json"
     if token_path.exists():
         return build(
             serviceName="calendar",
