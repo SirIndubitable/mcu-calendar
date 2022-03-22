@@ -74,7 +74,7 @@ def main(dry: bool, force: bool):
         ),
         YamlCalendar(
             "MCU Adjacent Movies",
-            ids["mcu-shows"],
+            ids["mcu-adjacent"],
             [data / "mcu-adjacent-movies"],
             [],
             service,
