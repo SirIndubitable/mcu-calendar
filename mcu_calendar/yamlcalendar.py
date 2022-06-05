@@ -1,11 +1,12 @@
 """
 Calendars objects that sync data to a google Calendar
 """
+from datetime import date
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
 from .events import GoogleMediaEvent, Movie, Show
-from .helpers import create_progress
+from .helpers import create_progress, truncate
 
 
 # pylint: disable=too-few-public-methods
@@ -74,7 +75,8 @@ class YamlCalendar:
                     (e for e in existing_events if "summary" in e and e["summary"] == item.title),
                     None,
                 )
-
+                if event is not None:
+                    existing_events.remove(event)
                 if event is None:
                     progress.print(f"[reset]{item}", "[red](Adding)")
                     self.google_service.insert(calendarId=self.cal_id, body=item.to_google_event()).execute()
@@ -98,4 +100,13 @@ class YamlCalendar:
         shows = [s for sdir in self.show_dirs for s in YamlCalendar._get_shows(sdir)]
         self._create_google_event("[bold]Movies..", movies, cur_events, force=force)
         self._create_google_event("[bold]Shows...", shows, cur_events, force=force)
+
+        with create_progress() as progress:
+            cur_events.sort(key=lambda i: date.fromisoformat(i["start"]["date"]))
+            for old_event in progress.track(cur_events, description="Stale events..."):
+                item_time = date.fromisoformat(old_event["start"]["date"])
+                item_str = f"{truncate(old_event['summary'], 26)} {item_time.strftime('%b %d, %Y')}"
+                progress.print(f"[reset]{item_str}", "[red](Deleting)")
+                self.google_service.delete(calendarId=self.cal_id, eventId=old_event["id"]).execute()
+
         print()

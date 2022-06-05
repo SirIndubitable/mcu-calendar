@@ -13,20 +13,23 @@ from mcu_calendar.yamlcalendar import YamlCalendar
 SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
 
 
-def get_cal_ids():
+def get_cal_ids(dry: bool):
     """
     Gets the ID of the calender that this script should write to.  This ID should
     belong to the user that logged in from get_google_creds()
     This tries to pull from a cal_id.yaml file first, for easy overriding when debuuging
     or running locally
     """
-    cal_id_path = Path("cal_id.yaml")
-    if cal_id_path.exists():
-        with open(cal_id_path, "r", encoding="UTF-8") as reader:
-            try:
-                return yaml.safe_load(reader)
-            except yaml.YAMLError as exc:
-                print(exc)
+    # Only use test calender information if we're not running a dry run, it's useful to
+    # see what would be updated in the real system
+    if not dry:
+        cal_id_path = Path("cal_id.yaml")
+        if cal_id_path.exists():
+            with open(cal_id_path, "r", encoding="UTF-8") as reader:
+                try:
+                    return yaml.safe_load(reader)
+                except yaml.YAMLError as exc:
+                    print(exc)
 
     # This would normally be secret, but this project is so people can add this calendar
     # to their calendars, and this information is on the iCal url, so why hide it?
@@ -48,7 +51,7 @@ def main(dry: bool, force: bool):
     if dry:
         service = MockService(service)
 
-    ids = get_cal_ids()
+    ids = get_cal_ids(dry)
     data = Path("data")
     calendars = [
         YamlCalendar(
@@ -101,12 +104,8 @@ def main(dry: bool, force: bool):
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Update a google calendarwith MCU Release info")
-    parser.add_argument(
-        "--force", action="store_true", help="Force update the existing events"
-    )
-    parser.add_argument(
-        "--dry", action="store_true", help="A dry run where nothing is updated"
-    )
+    parser.add_argument("--force", action="store_true", help="Force update the existing events")
+    parser.add_argument("--dry", action="store_true", help="A dry run where nothing is updated")
     args = parser.parse_args()
 
     main(args.dry, args.force)
