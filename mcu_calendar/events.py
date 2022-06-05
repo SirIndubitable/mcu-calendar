@@ -5,12 +5,7 @@ import datetime
 
 import yaml
 
-
-def truncate(string, length):
-    """
-    Truncates a string to a given length with "..." at the end if needed
-    """
-    return string[: (length - 3)].ljust(length, ".")
+from .helpers import truncate
 
 
 class GoogleMediaEvent:
@@ -50,9 +45,7 @@ class GoogleMediaEvent:
     def __eq__(self, other):
         if isinstance(other, GoogleMediaEvent):
             return self.description == other.description
-        return self.description == (
-            other["description"] if "description" in other else ""
-        )
+        return self.description == (other["description"] if "description" in other else "")
 
     def __ne__(self, other):
         return not self == other
@@ -80,9 +73,7 @@ class Movie(GoogleMediaEvent):
     def _to_google_event_core(self):
         return {
             "start": {"date": self.release_date.isoformat()},
-            "end": {
-                "date": (self.release_date + datetime.timedelta(days=1)).isoformat()
-            },
+            "end": {"date": (self.release_date + datetime.timedelta(days=1)).isoformat()},
             "summary": self.title,
         }
 
@@ -134,9 +125,7 @@ class Show(GoogleMediaEvent):
             "summary": self.title,
             "start": {"date": self.start_date.isoformat()},
             "end": {"date": (self.start_date + datetime.timedelta(days=1)).isoformat()},
-            "recurrence": [
-                f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT={self.weeks};BYDAY={self._rfc5545_weekday()}"
-            ],
+            "recurrence": [f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT={self.weeks};BYDAY={self._rfc5545_weekday()}"],
         }
 
     def sort_val(self):
@@ -146,11 +135,7 @@ class Show(GoogleMediaEvent):
         if not super().__eq__(other):
             return False
         if isinstance(other, Show):
-            return (
-                self.title == other.title
-                and self.start_date == other.start_date
-                and self.weeks == other.weeks
-            )
+            return self.title == other.title and self.start_date == other.start_date and self.weeks == other.weeks
         event = self.to_google_event()
         return (
             event["summary"] == other["summary"]
