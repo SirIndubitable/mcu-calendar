@@ -1,4 +1,4 @@
-name: CI
+name: Yaml Auto Update
 
 on:
   schedule:
@@ -24,33 +24,39 @@ jobs:
         run: make init
 
       - name: Update Yaml files
-        run: python .\get_new_media.py
+        run: python get_new_media.py
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          GOOGLE_SEARCH_API_KEY: ${{ secrets.GOOGLE_SEARCH_API_KEY }}
 
       - name: Commit
+        id: commit_yamls
         run: |
           git add ./data/*.yaml
-          git diff --cached --exit-code
-          if [ $? -eq 0 ]
+          if $(git diff --cached --exit-code >> /dev/null)
           then
-            return 1
+            return 0
           fi
           cur_date=$(date +"%m/%d/%Y %H:%M:%S")
-          branchName=$(date -d "$cur_date" +"yaml-bot-%Y%m%d-%H%M%S")
+          branchName=$(date -d "$cur_date" +"yaml-bot/%Y%m%d-%H%M%S")
           git switch -c $branchName
-          git commit -m $(date -d "$cur_date" +"Auto Update - %m/%d/%Y %H:%M")
-          git push --set-upstream origin yaml-bot/$branchName
-          echo "::set-env name=NEW_BRANCH_NAME::$branchName"
-          echo "::set-env name=RUN_DATETIME::$cur_date"
+          git commit -m "$(date -d "$cur_date" +"Auto Update - %m/%d/%Y %H:%M")"
+          git push --set-upstream origin $branchName
+          echo "NEW_BRANCH_NAME=$branchName" >> $GITHUB_ENV
+          echo "RUN_DATETIME=$cur_date" >> $GITHUB_ENV
+          echo "::set-output name=createPr::true"
 
-      - name: Post PR
-        uses: repo-sync/pull-request@v2
+      - if: steps.commit_yamls.outputs.createPr == 'true'
+        name: Post PR
+        uses: actions/github-script@v6
         with:
-          source_branch: $NEW_BRANCH_NAME
-          destination_branch: "main"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          pr_title: "Auto Update Yaml - $RUN_DATETIME"
-          pr_body: "Auto Update generated from workflows/daily_update.yaml"
-          pr_reviewer: "SirIndubitable"
-          pr_assignee: "SirIndubitable"
-          pr_label: "auto-pr"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "Auto Update Yaml - ${{ env.RUN_DATETIME }}",
+              body: "Auto Update generated from workflows/daily_update.yaml",
+              head: "${{ env.NEW_BRANCH_NAME }}",
+              base: "main",
+              maintainer_can_modify: true
+            })
