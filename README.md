@@ -31,8 +31,8 @@ https://calendar.google.com/calendar/embed?src=a28nf2scue1viptdqoiv33g718%40grou
 https://calendar.google.com/calendar/embed?src=g8i6h4j0978715cl0o6amilsb0%40group.calendar.google.com
 `https://calendar.google.com/calendar/ical/g8i6h4j0978715cl0o6amilsb0%40group.calendar.google.com/public/basic.ics`
 ### Star Wars Shows
-https://calendar.google.com/calendar/embed?src=tion8rl7er63ptn06ef4sio86o%40group.calendar.google.com
-`https://calendar.google.com/calendar/ical/tion8rl7er63ptn06ef4sio86o%40group.calendar.google.com/public/basic.ics`
+https://calendar.google.com/calendar/embed?src=9apr3vur3hcfkafq8s36njhkhs%40group.calendar.google.com
+`https://calendar.google.com/calendar/ical/9apr3vur3hcfkafq8s36njhkhs%40group.calendar.google.com/public/basic.ics`
 
 ## Contributing
 
