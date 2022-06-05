@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    environment: run
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+
+      - name: Setup Git
+        run: |
+          git config user.name "AutoUpdate Yaml Bot"
+          git config user.email "<>"
+
+      - name: Install Python Requirements
+        run: make init
+
+      - name: Update Yaml files
+        run: python .\get_new_media.py
+
+      - name: Commit
+        run: |
+          git add ./data/*.yaml
+          git diff --cached --exit-code
+          if [ $? -eq 0 ]
+          then
+            return 1
+          fi
+          cur_date=$(date +"%m/%d/%Y %H:%M:%S")
+          branchName=$(date -d "$cur_date" +"yaml-bot-%Y%m%d-%H%M%S")
+          git switch -c $branchName
+          git commit -m $(date -d "$cur_date" +"Auto Update - %m/%d/%Y %H:%M")
+          git push --set-upstream origin yaml-bot/$branchName
+          echo "::set-env name=NEW_BRANCH_NAME::$branchName"
+          echo "::set-env name=RUN_DATETIME::$cur_date"
+
+      - name: Post PR
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: $NEW_BRANCH_NAME
+          destination_branch: "main"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_title: "Auto Update Yaml - $RUN_DATETIME"
+          pr_body: "Auto Update generated from workflows/daily_update.yaml"
+          pr_reviewer: "SirIndubitable"
+          pr_assignee: "SirIndubitable"
+          pr_label: "auto-pr"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
