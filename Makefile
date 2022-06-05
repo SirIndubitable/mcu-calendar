@@ -27,7 +27,7 @@ test:
 lint:
 	$(info )
 	$(info ************  Linting        ************)
-	pylint $(SOURCE) --score=no
+	pylint $(SOURCE) --score=no --rcfile ./pyproject.toml
 	flake8 $(SOURCE) $(TEST_SOURCE) --config ./setup.cfg
 
 init:

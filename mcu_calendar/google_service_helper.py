@@ -43,16 +43,13 @@ def get_local_creds(scopes):
     # OAuth 2.0 Client ID from
     creds_path = Path("credentials.json")
     if creds_path.exists():
-        flow = InstalledAppFlow.from_client_secrets_file(
-            client_secrets_file=str(creds_path), scopes=scopes
-        )
+        flow = InstalledAppFlow.from_client_secrets_file(client_secrets_file=str(creds_path), scopes=scopes)
         creds = flow.run_console(access_type="offline", include_granted_scopes="true")
         update_creds_token(creds)
         return creds
 
     raise RuntimeError(
-        "Could not load local credentials, add a credentials.json "
-        "file from https://console.cloud.google.com/"
+        "Could not load local credentials, add a credentials.json " "file from https://console.cloud.google.com/"
     )
 
 
@@ -74,6 +71,9 @@ class MockService:
     def update(self, **kwargs):
         return self
 
+    def delete(self, **kwargs):
+        return self
+
     def insert(self, **kwargs):
         return self
 
@@ -85,16 +85,13 @@ def create_service(scopes):
     """
     Creates a service with the given scopes, and uses either a service token or local credentials
     """
+    # pylint: disable=no-member
     token_path = Path.home() / "secrets" / "service_token.json"
     if token_path.exists():
         return build(
             serviceName="calendar",
             version="v3",
-            client_options=ClientOptions(
-                credentials_file=str(token_path), scopes=scopes
-            ),
+            client_options=ClientOptions(credentials_file=str(token_path), scopes=scopes),
         ).events()
 
-    return build(
-        serviceName="calendar", version="v3", credentials=get_local_creds(scopes)
-    ).events()
+    return build(serviceName="calendar", version="v3", credentials=get_local_creds(scopes)).events()

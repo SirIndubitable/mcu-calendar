@@ -1,12 +1,12 @@
 """
 Calendars objects that sync data to a google Calendar
 """
+from datetime import date
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
-from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
-
 from .events import GoogleMediaEvent, Movie, Show
+from .helpers import create_progress, truncate
 
 
 # pylint: disable=too-few-public-methods
@@ -31,9 +31,7 @@ class YamlCalendar:
         self.google_service = google_service
 
     @staticmethod
-    def _get_objects_from_data(
-        folder: Path, factory: Callable[[Path], Any]
-    ) -> List[Any]:
+    def _get_objects_from_data(folder: Path, factory: Callable[[Path], Any]) -> List[Any]:
         """
         Loads all of the objects defined in yaml files in ./data/{{folder_name}}
         """
@@ -70,28 +68,18 @@ class YamlCalendar:
         """
         Creates or Updates events if needed on the calendar based on the items objects
         """
-        progress = Progress(
-            TextColumn(progress_title),
-            BarColumn(),
-            "[progress.percentage]{task.percentage:>3.0f}%",
-            TimeElapsedColumn(),
-        )
         items.sort(key=lambda i: i.sort_val())
-        with progress:
-            for item in progress.track(items):
+        with create_progress() as progress:
+            for item in progress.track(items, description=progress_title):
                 event = next(
-                    (
-                        e
-                        for e in existing_events
-                        if "summary" in e and e["summary"] == item.title
-                    ),
+                    (e for e in existing_events if "summary" in e and e["summary"] == item.title),
                     None,
                 )
+                if event is not None:
+                    existing_events.remove(event)
                 if event is None:
                     progress.print(f"[reset]{item}", "[red](Adding)")
-                    self.google_service.insert(
-                        calendarId=self.cal_id, body=item.to_google_event()
-                    ).execute()
+                    self.google_service.insert(calendarId=self.cal_id, body=item.to_google_event()).execute()
                 elif item != event or force:
                     progress.print(f"[reset]{item}", "[yellow](Updating)")
                     self.google_service.update(
@@ -112,4 +100,13 @@ class YamlCalendar:
         shows = [s for sdir in self.show_dirs for s in YamlCalendar._get_shows(sdir)]
         self._create_google_event("[bold]Movies..", movies, cur_events, force=force)
         self._create_google_event("[bold]Shows...", shows, cur_events, force=force)
+
+        with create_progress() as progress:
+            cur_events.sort(key=lambda i: date.fromisoformat(i["start"]["date"]))
+            for old_event in progress.track(cur_events, description="Stale events..."):
+                item_time = date.fromisoformat(old_event["start"]["date"])
+                item_str = f"{truncate(old_event['summary'], 26)} {item_time.strftime('%b %d, %Y')}"
+                progress.print(f"[reset]{item_str}", "[red](Deleting)")
+                self.google_service.delete(calendarId=self.cal_id, eventId=old_event["id"]).execute()
+
         print()
