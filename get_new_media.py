@@ -2,6 +2,7 @@
 This script adds events to a google users calendar for Movies and TV shows defined in ./data/
 """
 import re
+from argparse import ArgumentParser
 from datetime import date
 from pathlib import Path
 
@@ -104,44 +105,42 @@ def make_show_yamls(dir_path: Path, shows: list):
                 yaml.safe_dump(show_data, yaml_file, sort_keys=False)
 
 
-data_dir = Path("data")
-
-movie_queries = {
-    "mcu-movies": {
-        "with_companies": Companies.MARVEL_STUDIOS.value,
-        "without_genres": MovieGenre.DOCUMENTARY.value,
-        "primary_release_date.gte": date.today().isoformat(),
-    },
-    "mcu-adjacent-movies": {
-        "with_companies": Companies.MARVEL_ENTERTAINMENT.value,
-        "without_genres": MovieGenre.DOCUMENTARY.value,
-        "primary_release_date.gte": date.today().isoformat(),
-    },
-    "dceu-movies": {
-        "with_companies": Companies.DC_FILM.value,
-        "without_genres": MovieGenre.DOCUMENTARY.value,
-        "primary_release_date.gte": date.today().isoformat(),
-    },
-}
-
-show_queries = {
-    "mcu-shows": {
-        "with_companies": Companies.MARVEL_STUDIOS.value,
-        "without_genres": TvGenre.DOCUMENTARY.value,
-        "air_date.gte": date.today().isoformat(),
-    },
-    "starwars-shows": {
-        "with_companies": Companies.LUCAS_FILM.value,
-        "with_keywords": Keyword.STAR_WARS.value,
-        "air_date.gte": date.today().isoformat(),
-    },
-}
-
-
-def get_new_media():
+def get_new_media(release_date_gte: date):
     """
     Gets all new media given the query definitions
     """
+    movie_queries = {
+        "mcu-movies": {
+            "with_companies": Companies.MARVEL_STUDIOS.value,
+            "without_genres": MovieGenre.DOCUMENTARY.value,
+            "primary_release_date.gte": release_date_gte.isoformat(),
+        },
+        "mcu-adjacent-movies": {
+            "with_companies": Companies.MARVEL_ENTERTAINMENT.value,
+            "without_genres": MovieGenre.DOCUMENTARY.value,
+            "primary_release_date.gte": release_date_gte.isoformat(),
+        },
+        "dceu-movies": {
+            "with_companies": Companies.DC_FILM.value,
+            "without_genres": MovieGenre.DOCUMENTARY.value,
+            "primary_release_date.gte": release_date_gte.isoformat(),
+        },
+    }
+
+    show_queries = {
+        "mcu-shows": {
+            "with_companies": Companies.MARVEL_STUDIOS.value,
+            "without_genres": TvGenre.DOCUMENTARY.value,
+            "air_date.gte": release_date_gte.isoformat(),
+        },
+        "starwars-shows": {
+            "with_companies": Companies.LUCAS_FILM.value,
+            "with_keywords": Keyword.STAR_WARS.value,
+            "air_date.gte": release_date_gte.isoformat(),
+        },
+    }
+
+    data_dir = Path("data")
     with create_progress() as progress:
         task = progress.add_task("Working...", total=len(movie_queries) + len(show_queries))
 
@@ -159,4 +158,8 @@ def get_new_media():
 
 
 if __name__ == "__main__":
-    get_new_media()
+    parser = ArgumentParser(description="Update a google calendarwith MCU Release info")
+    parser.add_argument("--release_date", type=date.fromisoformat, default=date.today())
+    args = parser.parse_args()
+
+    get_new_media(args.release_date)
