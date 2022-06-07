@@ -35,7 +35,7 @@ jobs:
           git add ./data/*.yaml
           if $(git diff --cached --exit-code >> /dev/null)
           then
-            return 0
+            exit 0
           fi
           cur_date=$(date +"%m/%d/%Y %H:%M:%S")
           branchName=$(date -d "$cur_date" +"yaml-bot/%Y%m%d-%H%M%S")
