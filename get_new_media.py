@@ -46,6 +46,20 @@ def get_safe_title(title: str):
     return safe_title
 
 
+def get_release_date(movie, region):
+    """
+    Gets the release date for the given region if the details exist, otherwise
+    returns the default release_date
+    """
+    for region_releases in movie.release_dates.results:
+        if region_releases.iso_3166_1 == region:
+            for release_date in region_releases.release_dates:
+                # Type 3 is Theatrical release
+                if release_date.type == 3:
+                    return date.fromisoformat(release_date.release_date[:10])
+    return date.fromisoformat(movie.release_date)
+
+
 def make_movie_yamls(dir_path: Path, movies: list):
     """
     Makes the movie yamls for each movie from the json data
@@ -54,7 +68,7 @@ def make_movie_yamls(dir_path: Path, movies: list):
         yaml_path = dir_path / (get_safe_title(movie.title) + ".yaml")
         movie_data = {
             "title": movie.title,
-            "release_date": date.fromisoformat(movie.release_date),
+            "release_date": get_release_date(movie, "US"),
             "description": f"https://www.imdb.com/title/{movie.imdb_id}\n",
         }
         if dir_path.stem == "mcu-movies":
