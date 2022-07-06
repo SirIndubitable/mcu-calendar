@@ -155,7 +155,7 @@ def get_movies(payload={}):
     movie_api = Movie()
     movie_details = []
     for movie in movies:
-        movie_details.append(movie_api.details(movie["id"]))
+        movie_details.append(movie_api.details(movie["id"], append_to_response="release_dates"))
 
     return movie_details
 
