@@ -40,13 +40,23 @@ Contributions are what make the open source community such an amazing place to l
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
 
-If you just have a release date to add or update, please fork the repo and create a pull request.  You can also open an issue with the tag "bug" and wait for me or another contributor to update it.
-
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+## Adding or Updating media information
+
+If you just have a release date to add or update, there are a few ways you can help.
+1. Fork the repo and create a pull request like 
+2. Open an issue with the tag "bug" and wait for me or another contributor to update it.
+3. Make sure the information in https://www.themoviedb.org is what we expect to automatically update
+   - MCU media needs Marvel Studios as a production company
+   - MCU Adjacent movies need Marvel Entertainment as a production company
+   - DCEU movies need to have DC Films as a production company
+   - Star Wars shows need to have Lucas Films as a production company, and "Star Wars" as a keyword
+
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
