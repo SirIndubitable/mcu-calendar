@@ -144,7 +144,7 @@ def get_new_media(release_date_gte: date):
     show_queries = {
         "mcu-shows": {
             "with_companies": Companies.MARVEL_STUDIOS.value,
-            "without_genres": TvGenre.DOCUMENTARY.value,
+            "without_genres": f"{TvGenre.DOCUMENTARY.value}, {TvGenre.KIDS.value}",
             "air_date.gte": release_date_gte.isoformat(),
         },
         "starwars-shows": {
