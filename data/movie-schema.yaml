@@ -1,0 +1,6 @@
+type: "//rec"
+required:
+  title: "//str"
+  start_date: "//one"
+  weeks: "//int"
+  description: "//str"
