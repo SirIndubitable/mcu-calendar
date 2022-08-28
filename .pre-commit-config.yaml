@@ -43,11 +43,11 @@ repos:
     hooks:
       - id: check-jsonschema
         name: Check movie schema
-        files: ^data/.*-movies/.*\.json$
+        files: ^data/.*-movies/.*\.yaml$
         types: [yaml]
         args: ["--schemafile", "data/movie-schema.yaml"]
       - id: check-jsonschema
         name: Check show schema
-        files: ^data/.*-shows/.*\.json$
+        files: ^data/.*-shows/.*\.yaml$
         types: [yaml]
         args: ["--schemafile", "data/shows-schema.yaml"]
