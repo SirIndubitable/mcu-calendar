@@ -15,12 +15,12 @@ SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
 
 def get_cal_ids(dry: bool):
     """
-    Gets the ID of the calender that this script should write to.  This ID should
+    Gets the ID of the calendar that this script should write to.  This ID should
     belong to the user that logged in from get_google_creds()
     This tries to pull from a cal_id.yaml file first, for easy overriding when debuuging
     or running locally
     """
-    # Only use test calender information if we're not running a dry run, it's useful to
+    # Only use test calendar information if we're not running a dry run, it's useful to
     # see what would be updated in the real system
     if not dry:
         cal_id_path = Path("cal_id.yaml")

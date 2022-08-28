@@ -67,7 +67,7 @@ class Movie(GoogleMediaEvent):
         Factory method to create a Movie object from yaml
         """
         with open(yaml_path, "r", encoding="UTF-8") as yaml_file:
-            yaml_data = yaml.load(yaml_file, Loader=yaml.Loader)
+            yaml_data = yaml.safe_load(yaml_file)
         return Movie(**yaml_data)
 
     def _to_google_event_core(self):
@@ -113,7 +113,7 @@ class Show(GoogleMediaEvent):
         Factory method to create a Show object from yaml
         """
         with open(yaml_path, "r", encoding="UTF-8") as yaml_file:
-            yaml_data = yaml.load(yaml_file, Loader=yaml.Loader)
+            yaml_data = yaml.safe_load(yaml_file)
         return Show(**yaml_data)
 
     def _rfc5545_weekday(self):

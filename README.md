@@ -5,16 +5,16 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-This started out as just a script to upload MCU release dates to a Google Calender.
+This started out as just a script to upload MCU release dates to a Google Calendar.
 Previously I've found calendars that other people maintained manually that eventually went stale.
-The intention of this repo is that the release information can be crowd sourced and easy to pick up if I ever drop the ball on maintaing it.
+The intention of this repo is that the release information can be crowd sourced and easy to pick up if I ever drop the ball on maintaining it.
 
-I've had many requests for other calenders so I've added support for other calendars.
+I've had many requests for other calendars so I've added support for other calendars.
 
 Note: I don't personally folloow all of these release dates that closely, so please let me know if something is missing or goes out of date
 
 ## Calendars
-For each calendar I will list the URl and if you would like to add it directly to your calender, the public iCal address will also be listed
+For each calendar I will list the URl and if you would like to add it directly to your calendar, the public iCal address will also be listed
 ### MCU
 https://calendar.google.com/calendar/embed?src=unofficial.mcu.calendar%40gmail.com
 `https://calendar.google.com/calendar/ical/unofficial.mcu.calendar%40gmail.com/public/basic.ics`
@@ -49,7 +49,7 @@ If you have a suggestion that would make this better, please fork the repo and c
 ## Adding or Updating media information
 
 If you just have a release date to add or update, there are a few ways you can help.
-1. Fork the repo and create a pull request like 
+1. Fork the repo and create a pull request like
 2. Open an issue with the tag "bug" and wait for me or another contributor to update it.
 3. Make sure the information in https://www.themoviedb.org is what we expect to automatically update
    - MCU media needs Marvel Studios as a production company

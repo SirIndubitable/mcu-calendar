@@ -98,7 +98,7 @@ class TvGenre(Enum):
 
 def query_all_pages(func):
     """
-    Function decorator that agregates the results of func over multiple pages
+    Function decorator that aggregates the results of func over multiple pages
     """
 
     @wraps(func)

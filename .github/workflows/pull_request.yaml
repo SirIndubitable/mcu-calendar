@@ -12,8 +12,5 @@ jobs:
       - name: Install Python Requirements
         run: make init
 
-      - name: Lint everything
-        run: make lint
-
       - name: Run tests
         run: make test

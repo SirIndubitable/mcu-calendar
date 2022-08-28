@@ -70,9 +70,7 @@ def test_create_google_event_update():
     cal._create_google_event(
         progress_title="Test...",
         items=[MockEvent("Test Movie", "Movie Description")],
-        existing_events=[
-            {"summary": "Test Movie", "description": "Bad Description", "id": ""}
-        ],
+        existing_events=[{"summary": "Test Movie", "description": "Bad Description", "id": ""}],
         force=False,
     )
     assert len(service.insert_kwargs) == 0
@@ -86,9 +84,7 @@ def test_create_google_event_skip():
     cal._create_google_event(
         progress_title="Test...",
         items=[MockEvent("Test Movie", "Movie Description")],
-        existing_events=[
-            {"summary": "Test Movie", "description": "Movie Description", "id": ""}
-        ],
+        existing_events=[{"summary": "Test Movie", "description": "Movie Description", "id": ""}],
         force=False,
     )
     assert len(service.insert_kwargs) == 0
@@ -101,9 +97,7 @@ def test_create_google_event_skip_force():
     cal._create_google_event(
         progress_title="Test...",
         items=[MockEvent("Test Movie", "Movie Description")],
-        existing_events=[
-            {"summary": "Test Movie", "description": "Movie Description", "id": ""}
-        ],
+        existing_events=[{"summary": "Test Movie", "description": "Movie Description", "id": ""}],
         force=True,
     )
     assert len(service.insert_kwargs) == 0

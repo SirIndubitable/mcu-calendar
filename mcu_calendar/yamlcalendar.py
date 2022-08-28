@@ -53,7 +53,7 @@ class YamlCalendar:
 
     def _get_google_events(self) -> List[Dict]:
         """
-        Gets all of the events currently on the calender from get_cal_id()
+        Gets all of the events currently on the calendar from get_cal_id()
         """
         events_result = self.google_service.list(calendarId=self.cal_id).execute()
         return events_result.get("items", [])
