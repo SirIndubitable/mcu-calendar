@@ -1,6 +1,21 @@
-type: "//rec"
-required:
-  title: "//str"
-  start_date: "//one"
-  weeks: "//int"
-  description: "//str"
+%YAML 1.1
+---
+$schema: "http://json-schema.org/draft-04/schema"
+id: "https://github.com/SirIndubitable/mcu-calendar/data/movie-schema.yaml"
+title: Movie schema
+description: |
+  A metaschema defining what we expect the yaml movie release definition format to be
+
+allOf:
+  - $schema: "http://json-schema.org/draft-04/schema"
+  - type: object
+    properties:
+      title:
+        type: string
+        style: inline
+      release_date:
+        type: string
+        format: date
+      description:
+        type: string
+        style: literal

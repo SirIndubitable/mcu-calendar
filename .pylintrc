@@ -1,4 +1,0 @@
-[TYPECHECK]
-ignored-modules=
-    google,
-    googleapiclient,

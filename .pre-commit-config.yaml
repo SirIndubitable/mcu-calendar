@@ -20,6 +20,11 @@ repos:
     rev: v2.8.2
     hooks:
       - id: pylint
+        files: ^mcu_calendar/.*\.py$
+        args: [
+          # Running this outside of the environment, we can't import packages
+          '--disable=E0401'
+        ]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.1.0
@@ -55,4 +60,4 @@ repos:
         name: Check show schema
         files: ^data/.*-shows/.*\.yaml$
         types: [yaml]
-        args: ["--schemafile", "data/shows-schema.yaml"]
+        args: ["--schemafile", "data/show-schema.yaml"]

@@ -10,3 +10,7 @@ disable = [
     "dangerous-default-value",
     "E1120", # no-value-for-parameter, decorators break this
 ]
+ignored-modules = [
+    "google",
+    "googleapiclient",
+]

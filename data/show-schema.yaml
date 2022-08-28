@@ -1,0 +1,22 @@
+%YAML 1.1
+---
+$schema: "http://json-schema.org/draft-04/schema"
+id: "https://github.com/SirIndubitable/mcu-calendar/data/show-schema.yaml"
+title: Show schema
+description: |
+  A metaschema defining what we expect the yaml show release definition format to be
+allOf:
+  - $schema: "http://json-schema.org/draft-04/schema"
+  - type: object
+    properties:
+      title:
+        type: string
+        style: inline
+      start_date:
+        type: string
+        format: date
+      weeks:
+        type: integer
+      description:
+        type: string
+        style: literal
