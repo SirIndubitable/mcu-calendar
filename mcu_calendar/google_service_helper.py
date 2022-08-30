@@ -49,7 +49,7 @@ def get_local_creds(scopes):
         return creds
 
     raise RuntimeError(
-        "Could not load local credentials, add a credentials.json " "file from https://console.cloud.google.com/"
+        "Could not load local credentials, add a credentials.json file from https://console.cloud.google.com/"
     )
 
 
@@ -59,8 +59,8 @@ class MockService:
     get requests so that the code can run properly
     """
 
-    def __init__(self, realService):
-        self.real_service = realService
+    def __init__(self, real_service):
+        self.real_service = real_service
 
     # Disable unused argument and missing doc string because these are required to match the methods
     # That they are Mocking out
