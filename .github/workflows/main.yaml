@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
 
       - name: Install Python Requirements
         run: make init
@@ -23,6 +24,7 @@ jobs:
     environment: run
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
 
       - name: Install Python Requirements
         run: make init
