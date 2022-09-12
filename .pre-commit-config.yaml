@@ -10,14 +10,14 @@ repos:
       - id: flake8
 
   - repo: https://github.com/psf/black
-    rev: 22.6.0
+    rev: 22.8.0
     hooks:
       - id: black
         additional_dependencies:
           - click==8.0.4
 
   - repo: https://github.com/PyCQA/pylint
-    rev: v2.15.0
+    rev: v2.15.2
     hooks:
       - id: pylint
         files: ^mcu_calendar/.*\.py$
@@ -55,7 +55,7 @@ repos:
       - id: no-commit-to-branch
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.18.1
+    rev: 0.18.2
     hooks:
       - id: check-jsonschema
         name: Check movie schema
