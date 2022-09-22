@@ -204,31 +204,36 @@ def get_mcu_movie_link(movie):
     """
     Searches google to try to find the official webpage for the given mcu movie
     """
-    result = requests.get(
-        GOOGLE_SEARCH_FOMRAT.format(
-            api_key=os.environ["GOOGLE_SEARCH_API_KEY"],
-            cx=MARVEL_MOVIES_CX,
-            query=url_encode(movie.title),
-        )
+    return __get_search_link(
+        movie.title,
+        MARVEL_MOVIES_CX,
+        url_encode(movie.title),
     )
-    for item in result.json()["items"]:
-        if movie.title.lower() in item["title"].lower():
-            return item["link"]
-    return None
 
 
 def get_mcu_show_link(show, season):
     """
     Searches google to try to find the official webpage for the given mcu show/season
     """
+    return __get_search_link(
+        show.name,
+        MARVEL_SHOWS_CX,
+        url_encode(f"{show.name} {season.name}"),
+    )
+
+
+def __get_search_link(name, search_id, query):
+    """
+    Gets the first link for the query with a title that matches the given name
+    """
     result = requests.get(
         GOOGLE_SEARCH_FOMRAT.format(
             api_key=os.environ["GOOGLE_SEARCH_API_KEY"],
-            cx=MARVEL_SHOWS_CX,
-            query=url_encode(f"{show.name} {season.name}"),
+            cx=search_id,
+            query=query,
         )
     )
-    for item in result.json()["items"]:
-        if show.name.lower() in item["title"].lower():
+    for item in result.json().get("items", []):
+        if name.lower() in item["title"].lower():
             return item["link"]
     return None
