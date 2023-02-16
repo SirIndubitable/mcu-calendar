@@ -44,7 +44,7 @@ class Keyword(Enum):
 
     MCU = "180547"
     SHORT_FILM = "263548"
-    STAR_WARS = "297811"
+    STAR_WARS = "311861"
 
 
 class MovieGenre(Enum):
