@@ -27,34 +27,14 @@ jobs:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           GOOGLE_SEARCH_API_KEY: ${{ secrets.GOOGLE_SEARCH_API_KEY }}
 
-      - name: Commit
-        id: commit_yamls
-        run: |
-          git add ./data/*.yaml
-          if $(git diff --cached --exit-code >> /dev/null)
-          then
-            exit 0
-          fi
-          cur_date=$(date +"%m/%d/%Y %H:%M:%S")
-          branchName=$(date -d "$cur_date" +"yaml-bot/%Y%m%d-%H%M%S")
-          git switch -c $branchName
-          git commit -m "$(date -d "$cur_date" +"Auto Update - %m/%d/%Y %H:%M")"
-          git push --set-upstream origin $branchName
-          echo "NEW_BRANCH_NAME=$branchName" >> $GITHUB_ENV
-          echo "RUN_DATETIME=$cur_date" >> $GITHUB_ENV
-          echo "::set-output name=createPr::true"
-
-      - if: steps.commit_yamls.outputs.createPr == 'true'
-        name: Post PR
-        uses: actions/github-script@v6
+      - name: Create Pull request
+        uses: peter-evans/create-pull-request@v4
         with:
-          script: |
-            github.rest.pulls.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: "Auto Update Yaml - ${{ env.RUN_DATETIME }}",
-              body: "Auto Update generated from workflows/daily_update.yaml",
-              head: "${{ env.NEW_BRANCH_NAME }}",
-              base: "main",
-              maintainer_can_modify: true
-            })
+          add-paths: './data/*.yaml'
+          commit-message:  $(date -d "$cur_date" +"Auto Update - %m/%d/%Y %H:%M")"
+          branch: yaml-bot
+          delete-branch: true
+          branch-suffix: timestamp
+          title: "Auto Update Yaml - $(date +'%Y-%m-%d')"
+          body: "Auto Update generated from workflows/daily_update.yaml"
+          base: main
