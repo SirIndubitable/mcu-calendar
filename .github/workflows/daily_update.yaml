@@ -10,6 +10,10 @@ jobs:
     runs-on: ubuntu-22.04
     environment: run
     steps:
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
 
@@ -31,10 +35,10 @@ jobs:
         uses: peter-evans/create-pull-request@v4
         with:
           add-paths: './data/*.yaml'
-          commit-message:  $(date -d "$cur_date" +"Auto Update - %m/%d/%Y %H:%M")"
+          commit-message: Auto Update - ${{ steps.date.outputs.date }}
           branch: yaml-bot
           delete-branch: true
           branch-suffix: timestamp
-          title: "Auto Update Yaml - $(date +'%Y-%m-%d')"
-          body: "Auto Update generated from workflows/daily_update.yaml"
+          title: Auto Update - ${{ steps.date.outputs.date }}
+          body: Auto Update generated from workflows/daily_update.yaml
           base: main
