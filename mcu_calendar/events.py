@@ -138,7 +138,7 @@ class Show(GoogleMediaEvent):
             "end": {"date": (self.start_date + datetime.timedelta(days=1)).isoformat()},
         }
 
-        schedule = (j - i for i, j in zip(self.release_dates[:-1], self.release_dates[1:]))
+        schedule = {j - i for i, j in zip(self.release_dates[:-1], self.release_dates[1:])}
         if len(self.release_dates) == 1:
             event_data["recurrence"] = None
         elif len(schedule) == 1:
