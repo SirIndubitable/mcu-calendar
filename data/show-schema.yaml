@@ -12,11 +12,11 @@ allOf:
       title:
         type: string
         style: inline
-      start_date:
-        type: string
-        format: date
-      weeks:
-        type: integer
+      release_dates:
+        type: array
+        items:
+          type: string
+          format: date
       description:
         type: string
         style: literal

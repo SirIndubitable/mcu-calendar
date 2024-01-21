@@ -18,6 +18,7 @@ class Companies(Enum):
     DC_FILM = 128064
 
     MARVEL_STUDIOS = 420
+    MARVEL_STUDIOS_ANIMATION = 216474
     MARVEL_ENTERTAINMENT = 7505
     MARVEL_ANIMATION = 13252
 
@@ -44,7 +45,7 @@ class Keyword(Enum):
 
     MCU = "180547"
     SHORT_FILM = "263548"
-    STAR_WARS = "322013"
+    STAR_WARS_UNIVERSE = "327713"
 
 
 class MovieGenre(Enum):
@@ -164,10 +165,12 @@ def should_skip(season, payload):
     """
     Checks if the given season should be skipped based on the payload filter criteria
     """
+    if season.air_date is None:
+        return True
     if "air_date.gte" in payload:
         return season.air_date < payload["air_date.gte"]
     if "air_date.lte" in payload:
-        return season.air_date > payload["air_date.gte"]
+        return season.air_date > payload["air_date.lte"]
     return False
 
 
