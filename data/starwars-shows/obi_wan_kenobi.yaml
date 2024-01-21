@@ -1,5 +1,9 @@
 title: Obi-Wan Kenobi
-start_date: 2022-05-26
-weeks: 5
+release_dates:
+- '2022-05-26'
+- '2022-06-01'
+- '2022-06-08'
+- '2022-06-15'
+- '2022-06-22'
 description: |
   https://www.imdb.com/title/tt8466564

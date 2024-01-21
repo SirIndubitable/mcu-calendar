@@ -55,7 +55,7 @@ If you just have a release date to add or update, there are a few ways you can h
    - MCU media needs Marvel Studios as a production company
    - MCU Adjacent movies need Marvel Entertainment as a production company
    - DCEU movies need to have DC Films as a production company
-   - Star Wars shows need to have Lucas Films as a production company, and "Star Wars" as a keyword
+   - Star Wars shows need to have Lucas Films as a production company, and "Star Wars Universe" as a keyword
 
 
 <!-- ACKNOWLEDGMENTS -->

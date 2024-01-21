@@ -31,6 +31,19 @@ class GoogleMediaEvent:
         }
         return {**base_event, **self._to_google_event_core()}
 
+    @staticmethod
+    def load_yaml(yaml_path):
+        """
+        Factory method to create a Show object from yaml
+        """
+        with open(yaml_path, "r", encoding="UTF-8") as yaml_file:
+            yaml_data = yaml.safe_load(yaml_file)
+        patch_path = yaml_path.with_suffix(".patch")
+        if patch_path.exists():
+            with open(patch_path, "r", encoding="UTF-8") as yaml_file:
+                yaml_data = yaml_data | yaml.safe_load(yaml_file)
+        return yaml_data
+
     def _to_google_event_core(self):
         """
         The method that subclasses should override for baseclass specific
@@ -66,8 +79,7 @@ class Movie(GoogleMediaEvent):
         """
         Factory method to create a Movie object from yaml
         """
-        with open(yaml_path, "r", encoding="UTF-8") as yaml_file:
-            yaml_data = yaml.safe_load(yaml_file)
+        yaml_data = GoogleMediaEvent.load_yaml(yaml_path)
         return Movie(**yaml_data)
 
     def _to_google_event_core(self):
@@ -101,19 +113,18 @@ class Show(GoogleMediaEvent):
     The event that describes a show start date and how many weeks it runs for
     """
 
-    def __init__(self, title, start_date, weeks, description):
+    def __init__(self, title, release_dates, description):
         super().__init__(description)
         self.title = title
-        self.start_date = start_date
-        self.weeks = weeks
+        self.release_dates = release_dates
+        self.start_date = release_dates[0]
 
     @staticmethod
     def from_yaml(yaml_path):
         """
         Factory method to create a Show object from yaml
         """
-        with open(yaml_path, "r", encoding="UTF-8") as yaml_file:
-            yaml_data = yaml.safe_load(yaml_file)
+        yaml_data = GoogleMediaEvent.load_yaml(yaml_path)
         return Show(**yaml_data)
 
     def _rfc5545_weekday(self):
@@ -121,12 +132,26 @@ class Show(GoogleMediaEvent):
         return _recurrence_weekday[self.start_date.weekday()]
 
     def _to_google_event_core(self):
-        return {
+        event_data = {
             "summary": self.title,
             "start": {"date": self.start_date.isoformat()},
             "end": {"date": (self.start_date + datetime.timedelta(days=1)).isoformat()},
-            "recurrence": [f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT={self.weeks};BYDAY={self._rfc5545_weekday()}"],
         }
+
+        schedule = set([j-i for i, j in zip(self.release_dates[:-1], self.release_dates[1:])])
+        if len(self.release_dates) == 1:
+            event_data["recurrence"] = None
+        elif len(schedule) == 1:
+            [recurrence] = schedule
+            if recurrence == datetime.timedelta(days=7):
+                event_data["recurrence"] = [f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT={len(self.release_dates)};BYDAY={self._rfc5545_weekday()}"]
+            if recurrence == datetime.timedelta(days=1):
+                event_data["recurrence"] = [f"RRULE:FREQ=DAILY;COUNT={len(self.release_dates)}"]
+        else:
+            event_data["recurrence"] = None
+
+        return event_data
+
 
     def sort_val(self):
         return self.start_date
@@ -135,7 +160,8 @@ class Show(GoogleMediaEvent):
         if not super().__eq__(other):
             return False
         if isinstance(other, Show):
-            return self.title == other.title and self.start_date == other.start_date and self.weeks == other.weeks
+            return self.title == other.title \
+               and self.release_dates == other.release_dates
         event = self.to_google_event()
         return (
             event["summary"] == other["summary"]

@@ -3,7 +3,7 @@ This script adds events to a google users calendar for Movies and TV shows defin
 """
 import re
 from argparse import ArgumentParser
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import yaml
@@ -89,15 +89,16 @@ def make_movie_yamls(dir_path: Path, movies: list):
             yaml.safe_dump(movie_data, yaml_file, sort_keys=False)
 
 
-def get_season_weeks(season):
+def get_season_release_dates(season):
     """
     Gets the number of distinct weeks in a given season
     """
     air_dates = set()
     for episode in season.episodes:
         air_dates.add(episode.air_date)
-    return len(air_dates)
-
+    air_dates = list(air_dates)
+    air_dates.sort()
+    return air_dates
 
 def make_show_yamls(dir_path: Path, shows: list):
     """
@@ -109,8 +110,7 @@ def make_show_yamls(dir_path: Path, shows: list):
         for season in show.seasons:
             show_data = {
                 "title": show.name,
-                "start_date": date.fromisoformat(season.air_date),
-                "weeks": get_season_weeks(season),
+                "release_dates": get_season_release_dates(season),
                 "description": f"https://www.imdb.com/title/{show.external_ids.imdb_id}\n",
             }
             if dir_path.stem == "mcu-shows":
@@ -152,13 +152,13 @@ def get_new_media(release_date_gte: date):
 
     show_queries = {
         "mcu-shows": {
-            "with_companies": Companies.MARVEL_STUDIOS.value,
+            "with_companies": f"{Companies.MARVEL_STUDIOS.value} | {Companies.MARVEL_STUDIOS_ANIMATION.value}",
             "without_genres": f"{TvGenre.DOCUMENTARY.value}, {TvGenre.KIDS.value}",
             "air_date.gte": release_date_gte.isoformat(),
         },
         "starwars-shows": {
             "with_companies": Companies.LUCAS_FILM.value,
-            "with_keywords": Keyword.STAR_WARS.value,
+            "with_keywords": Keyword.STAR_WARS_UNIVERSE.value,
             "air_date.gte": release_date_gte.isoformat(),
         },
     }
@@ -182,7 +182,7 @@ def get_new_media(release_date_gte: date):
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Update a google calendarwith MCU Release info")
-    parser.add_argument("--release_date", type=date.fromisoformat, default=date.today())
+    parser.add_argument("--release_date", type=date.fromisoformat, default=(date.today() - timedelta(weeks=4)))
     args = parser.parse_args()
 
     get_new_media(args.release_date)

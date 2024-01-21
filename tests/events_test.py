@@ -145,22 +145,27 @@ def test_movie_event_not_equals(event_dict):
 def test_shows_yaml(show_path: Path):
     show = Show.from_yaml(show_path)
     assert isinstance(show.title, str)
-    assert isinstance(show.start_date, datetime.date)
-    assert isinstance(show.weeks, int)
+    assert isinstance(show.release_dates, list)
     assert isinstance(show.description, str)
 
 
 def test_shows_equals():
     show1 = Show(
         title="MY TITLE",
-        start_date=datetime.date(2019, 4, 20),
-        weeks=7,
+        release_dates=[
+            datetime.date(2019, 4, 20),
+            datetime.date(2019, 4, 27),
+            datetime.date(2019, 5, 4),
+        ],
         description="Lots of stuff",
     )
     show2 = Show(
         title="MY TITLE",
-        start_date=datetime.date(2019, 4, 20),
-        weeks=7,
+        release_dates=[
+            datetime.date(2019, 4, 20),
+            datetime.date(2019, 4, 27),
+            datetime.date(2019, 5, 4),
+        ],
         description="Lots of stuff",
     )
     assert show1 == show1  # pylint: disable=comparison-with-itself
@@ -174,26 +179,40 @@ def test_shows_equals():
     [
         {
             "title": "MY TITLE 2",
-            "start_date": datetime.date(2019, 4, 20),
-            "weeks": 3,
+            "release_dates": [
+                datetime.date(2019, 4, 20),
+                datetime.date(2019, 4, 27),
+                datetime.date(2019, 5, 4),
+            ],
             "description": "Sometimes things happen",
         },
         {
             "title": "MY TITLE",
-            "start_date": datetime.date(2019, 12, 25),
-            "weeks": 3,
+            "release_dates": [
+                datetime.date(2019, 12, 25),
+                datetime.date(2020, 1, 1),
+                datetime.date(2020, 1, 8),
+            ],
             "description": "Sometimes things happen",
         },
         {
             "title": "MY TITLE",
-            "start_date": datetime.date(2019, 4, 20),
-            "weeks": 9,
+            "release_dates": [
+                datetime.date(2019, 4, 20),
+                datetime.date(2019, 4, 27),
+                datetime.date(2019, 5, 4),
+                datetime.date(2019, 5, 11),
+                datetime.date(2019, 5, 18),
+            ],
             "description": "Sometimes things happen",
         },
         {
             "title": "MY TITLE",
-            "start_date": datetime.date(2019, 4, 20),
-            "weeks": 9,
+            "release_dates": [
+                datetime.date(2019, 4, 20),
+                datetime.date(2019, 4, 27),
+                datetime.date(2019, 5, 4),
+            ],
             "description": "Nothing ever happens",
         },
     ],
@@ -201,8 +220,11 @@ def test_shows_equals():
 def test_shows_not_equals(show_dict):
     show1 = Show(
         title="MY TITLE",
-        start_date=datetime.date(2019, 4, 20),
-        weeks=3,
+        release_dates=[
+            datetime.date(2019, 4, 20),
+            datetime.date(2019, 4, 27),
+            datetime.date(2019, 5, 4),
+        ],
         description="Sometimes things happen",
     )
     show2 = Show(**show_dict)
@@ -213,15 +235,20 @@ def test_shows_not_equals(show_dict):
 def test_show_event_equals():
     show = Show(
         title="MY TITLE",
-        start_date=datetime.date(2019, 4, 20),
-        weeks=20,
+        release_dates=[
+            datetime.date(2019, 4, 20),
+            datetime.date(2019, 4, 27),
+            datetime.date(2019, 5, 4),
+            datetime.date(2019, 5, 11),
+            datetime.date(2019, 5, 18),
+        ],
         description="Sometimes things happen",
     )
     event = {
         "start": {"date": "2019-04-20"},
         "end": {"date": "2019-04-21"},
         "summary": "MY TITLE",
-        "recurrence": ["RRULE:FREQ=WEEKLY;WKST=SU;COUNT=20;BYDAY=SA"],
+        "recurrence": ["RRULE:FREQ=WEEKLY;WKST=SU;COUNT=5;BYDAY=SA"],
         "description": "Sometimes things happen",
     }
     assert show == event
@@ -273,9 +300,75 @@ def test_show_event_equals():
 def test_show_event_not_equals(event_dict):
     show = Show(
         title="MY TITLE",
-        start_date=datetime.date(2019, 4, 20),
-        weeks=6,
+        release_dates=[
+            datetime.date(2019, 4, 20),
+            datetime.date(2019, 4, 27),
+            datetime.date(2019, 5, 4),
+            datetime.date(2019, 5, 11),
+            datetime.date(2019, 5, 18),
+            datetime.date(2019, 5, 25),
+        ],
         description="Sometimes things happen",
     )
     assert not show == event_dict
     assert show != event_dict
+
+
+@pytest.mark.parametrize(
+    ("event", "recurrence"),
+    [
+        (
+            {
+                "title": "TITLE",
+                "release_dates": [
+                    datetime.date(2019, 4, 20),
+                    datetime.date(2019, 4, 27),
+                    datetime.date(2019, 5, 4),
+                ],
+                "description": "Sometimes things happen",
+            },
+            "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=3;BYDAY=SA",
+        ),
+        (
+            {
+                "title": "TITLE",
+                "release_dates": [
+                    datetime.date(2019, 4, 20),
+                    datetime.date(2019, 4, 21),
+                    datetime.date(2019, 4, 22),
+                ],
+                "description": "Sometimes things happen",
+            },
+            "RRULE:FREQ=DAILY;COUNT=3",
+        ),
+        (
+            {
+                "title": "TITLE",
+                "release_dates": [
+                    datetime.date(2019, 4, 20),
+                    datetime.date(2019, 4, 21),
+                    datetime.date(2019, 4, 27),
+                ],
+                "description": "Sometimes things happen",
+            },
+            None,
+        ),
+        (
+            {
+                "title": "TITLE 2",
+                "release_dates": [
+                    datetime.date(2019, 4, 20),
+                ],
+                "description": "Sometimes things happen",
+            },
+            None,
+        ),
+    ],
+)
+def test_show_recurrence(event, recurrence):
+    show = Show(**event)
+    google_event = show.to_google_event()
+    if recurrence is None:
+        assert google_event["recurrence"] == None
+    else:
+        assert google_event["recurrence"][0] == recurrence
