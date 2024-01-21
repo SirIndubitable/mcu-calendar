@@ -369,6 +369,6 @@ def test_show_recurrence(event, recurrence):
     show = Show(**event)
     google_event = show.to_google_event()
     if recurrence is None:
-        assert google_event["recurrence"] == None
+        assert google_event["recurrence"] is None
     else:
         assert google_event["recurrence"][0] == recurrence
