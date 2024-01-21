@@ -146,6 +146,8 @@ def test_shows_yaml(show_path: Path):
     show = Show.from_yaml(show_path)
     assert isinstance(show.title, str)
     assert isinstance(show.release_dates, list)
+    for date in show.release_dates:
+        assert isinstance(date, datetime.date)
     assert isinstance(show.description, str)
 
 
