@@ -100,6 +100,7 @@ def get_season_release_dates(season):
     air_dates.sort()
     return air_dates
 
+
 def make_show_yamls(dir_path: Path, shows: list):
     """
     Makes the show yamls for each season from the show json data

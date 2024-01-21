@@ -138,20 +138,21 @@ class Show(GoogleMediaEvent):
             "end": {"date": (self.start_date + datetime.timedelta(days=1)).isoformat()},
         }
 
-        schedule = set([j-i for i, j in zip(self.release_dates[:-1], self.release_dates[1:])])
+        schedule = set([j - i for i, j in zip(self.release_dates[:-1], self.release_dates[1:])])
         if len(self.release_dates) == 1:
             event_data["recurrence"] = None
         elif len(schedule) == 1:
             [recurrence] = schedule
             if recurrence == datetime.timedelta(days=7):
-                event_data["recurrence"] = [f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT={len(self.release_dates)};BYDAY={self._rfc5545_weekday()}"]
+                event_data["recurrence"] = [
+                    f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT={len(self.release_dates)};BYDAY={self._rfc5545_weekday()}"
+                ]
             if recurrence == datetime.timedelta(days=1):
                 event_data["recurrence"] = [f"RRULE:FREQ=DAILY;COUNT={len(self.release_dates)}"]
         else:
             event_data["recurrence"] = None
 
         return event_data
-
 
     def sort_val(self):
         return self.start_date
@@ -160,8 +161,7 @@ class Show(GoogleMediaEvent):
         if not super().__eq__(other):
             return False
         if isinstance(other, Show):
-            return self.title == other.title \
-               and self.release_dates == other.release_dates
+            return self.title == other.title and self.release_dates == other.release_dates
         event = self.to_google_event()
         return (
             event["summary"] == other["summary"]
