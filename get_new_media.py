@@ -95,7 +95,7 @@ def get_season_release_dates(season):
     """
     air_dates = set()
     for episode in season.episodes:
-        air_dates.add(episode.air_date)
+        air_dates.add(date.fromisoformat(episode.air_date))
     air_dates = list(air_dates)
     air_dates.sort()
     return air_dates
