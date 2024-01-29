@@ -1,6 +1,7 @@
 """
 Generic helper methods that eny of the modules here might want to use
 """
+
 from rich.progress import BarColumn, Progress, TimeElapsedColumn
 
 

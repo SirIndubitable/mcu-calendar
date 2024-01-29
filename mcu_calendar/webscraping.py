@@ -1,6 +1,7 @@
 """
 This script provides helper methods for accessing themoviedb.org data about the MCU
 """
+
 import os
 from enum import Enum
 from functools import wraps

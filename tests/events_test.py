@@ -1,6 +1,7 @@
 """
 Pytests for events.py
 """
+
 import datetime
 from pathlib import Path
 

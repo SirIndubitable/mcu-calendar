@@ -1,6 +1,7 @@
 """
 Pytests for yamlcalendar.py
 """
+
 from pathlib import Path
 
 from mcu_calendar.events import GoogleMediaEvent

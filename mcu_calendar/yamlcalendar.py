@@ -1,6 +1,7 @@
 """
 Calendars objects that sync data to a google Calendar
 """
+
 from datetime import date
 from pathlib import Path
 from typing import Any, Callable, Dict, List
