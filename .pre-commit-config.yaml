@@ -1,23 +1,23 @@
 repos:
   - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
       - id: isort
 
   - repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
+    rev: 7.0.0
     hooks:
       - id: flake8
 
   - repo: https://github.com/psf/black
-    rev: 23.1.0
+    rev: 24.1.1
     hooks:
       - id: black
         additional_dependencies:
           - click==8.0.4
 
   - repo: https://github.com/PyCQA/pylint
-    rev: v2.16.2
+    rev: v3.0.3
     hooks:
       - id: pylint
         files: ^mcu_calendar/.*\.py$
@@ -27,19 +27,19 @@ repos:
         ]
 
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.4
+    rev: 1.7.7
     hooks:
       - id: bandit
         files: ^mcu_calendar/.*\.py$
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.2
+    rev: v2.2.6
     hooks:
       - id: codespell
         args: ['--write-changes']
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
@@ -55,7 +55,7 @@ repos:
       - id: no-commit-to-branch
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.21.0
+    rev: 0.27.3
     hooks:
       - id: check-jsonschema
         name: Check movie schema
