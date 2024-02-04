@@ -16,13 +16,14 @@ repos:
         additional_dependencies:
           - click==8.0.4
 
-  - repo: local
+  - repo: https://github.com/PyCQA/pylint
+    rev: v3.0.3
     hooks:
       - id: pylint
-        name: pylint
-        entry: pylint
-        language: system
-        types: [python]
+        args: [
+          # Running this outside of the environment, we can't import packages
+          '--disable=E0401'
+        ]
 
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.7
