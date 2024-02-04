@@ -29,7 +29,7 @@ repos:
     rev: 1.7.7
     hooks:
       - id: bandit
-        files: ^mcu_calendar/.*\.py$
+        exclude: ^tests/
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.6
