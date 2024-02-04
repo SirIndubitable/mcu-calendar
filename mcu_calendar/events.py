@@ -1,6 +1,7 @@
 """
 Google Event objects that represent different media release events
 """
+
 import datetime
 
 import yaml

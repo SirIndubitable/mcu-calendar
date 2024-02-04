@@ -1,6 +1,11 @@
 """
 Pytests for events.py
 """
+
+# pylint: disable=missing-function-docstring
+# pylint: disable=unnecessary-negation
+# pylint: disable=comparison-with-itself
+
 import datetime
 from pathlib import Path
 
@@ -38,9 +43,9 @@ def test_movies_equals():
         release_date=datetime.date(2019, 4, 20),
         description="stuff happens",
     )
-    assert movie1 == movie1  # pylint: disable=comparison-with-itself
+    assert movie1 == movie1
     assert movie1 == movie2
-    assert not movie1 != movie1  # pylint: disable=comparison-with-itself
+    assert not movie1 != movie1
     assert not movie1 != movie2
 
 
@@ -138,7 +143,7 @@ def test_movie_event_equals():
         },
         {
             # Missing Start Date
-            "start": dict(),
+            "start": {},
             "end": {"date": "2019-04-21"},
             "summary": "MY TITLE",
             "description": "stuff happens",
@@ -146,7 +151,7 @@ def test_movie_event_equals():
         {
             # Missing End Date
             "start": {"date": "2019-04-20"},
-            "end": dict(),
+            "end": {},
             "summary": "MY TITLE",
             "description": "stuff happens",
         },
@@ -212,9 +217,9 @@ def test_shows_equals():
         ],
         description="Lots of stuff",
     )
-    assert show1 == show1  # pylint: disable=comparison-with-itself
+    assert show1 == show1
     assert show1 == show2
-    assert not show1 != show1  # pylint: disable=comparison-with-itself
+    assert not show1 != show1
     assert not show1 != show2
 
 
@@ -360,7 +365,7 @@ def test_show_event_equals():
         },
         {
             # Missing Start Date
-            "start": dict(),
+            "start": {},
             "end": {"date": "2019-04-21"},
             "summary": "MY TITLE",
             "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
@@ -369,7 +374,7 @@ def test_show_event_equals():
         {
             # Missing End Date
             "start": {"date": "2019-04-20"},
-            "end": dict(),
+            "end": {},
             "summary": "MY TITLE",
             "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
             "description": "Sometimes things happen",
