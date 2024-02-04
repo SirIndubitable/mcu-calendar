@@ -1,6 +1,7 @@
 """
 This script provides helper methods for accessing themoviedb.org data about the MCU
 """
+
 import os
 from enum import Enum
 from functools import wraps
@@ -234,7 +235,8 @@ def __get_search_link(name, search_id, query):
             api_key=os.environ["GOOGLE_SEARCH_API_KEY"],
             cx=search_id,
             query=query,
-        )
+        ),
+        timeout=30,
     )
     for item in result.json().get("items", []):
         if name.lower() in item["title"].lower():

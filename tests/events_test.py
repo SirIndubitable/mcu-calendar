@@ -1,6 +1,11 @@
 """
 Pytests for events.py
 """
+
+# pylint: disable=missing-function-docstring
+# pylint: disable=unnecessary-negation
+# pylint: disable=comparison-with-itself
+
 import datetime
 from pathlib import Path
 
@@ -38,9 +43,9 @@ def test_movies_equals():
         release_date=datetime.date(2019, 4, 20),
         description="stuff happens",
     )
-    assert movie1 == movie1  # pylint: disable=comparison-with-itself
+    assert movie1 == movie1
     assert movie1 == movie2
-    assert not movie1 != movie1  # pylint: disable=comparison-with-itself
+    assert not movie1 != movie1
     assert not movie1 != movie2
 
 
@@ -97,28 +102,70 @@ def test_movie_event_equals():
     "event_dict",
     [
         {
+            # Wrong Start Date
             "start": {"date": "2019-10-20"},
             "end": {"date": "2019-04-21"},
             "summary": "MY TITLE",
             "description": "stuff happens",
         },
         {
+            # Wrong End Date
             "start": {"date": "2019-04-20"},
             "end": {"date": "2019-03-14"},
             "summary": "MY TITLE",
             "description": "stuff happens",
         },
         {
+            # Wrong Summary
             "start": {"date": "2019-04-20"},
             "end": {"date": "2019-04-21"},
             "summary": "YOUR TITLE",
             "description": "stuff happens",
         },
         {
+            # Wrong Description
             "start": {"date": "2019-04-20"},
             "end": {"date": "2019-04-21"},
             "summary": "MY TITLE",
             "description": "Something happens",
+        },
+        {
+            # Missing Start
+            "end": {"date": "2019-04-21"},
+            "summary": "MY TITLE",
+            "description": "stuff happens",
+        },
+        {
+            # Missing End
+            "start": {"date": "2019-04-20"},
+            "summary": "MY TITLE",
+            "description": "stuff happens",
+        },
+        {
+            # Missing Start Date
+            "start": {},
+            "end": {"date": "2019-04-21"},
+            "summary": "MY TITLE",
+            "description": "stuff happens",
+        },
+        {
+            # Missing End Date
+            "start": {"date": "2019-04-20"},
+            "end": {},
+            "summary": "MY TITLE",
+            "description": "stuff happens",
+        },
+        {
+            # Missing Summary
+            "start": {"date": "2019-04-20"},
+            "end": {"date": "2019-04-21"},
+            "description": "stuff happens",
+        },
+        {
+            # Missing Description
+            "start": {"date": "2019-04-20"},
+            "end": {"date": "2019-04-21"},
+            "summary": "MY TITLE",
         },
     ],
 )
@@ -170,9 +217,9 @@ def test_shows_equals():
         ],
         description="Lots of stuff",
     )
-    assert show1 == show1  # pylint: disable=comparison-with-itself
+    assert show1 == show1
     assert show1 == show2
-    assert not show1 != show1  # pylint: disable=comparison-with-itself
+    assert not show1 != show1
     assert not show1 != show2
 
 
@@ -263,6 +310,7 @@ def test_show_event_equals():
     "event_dict",
     [
         {
+            # Wrong Start Date
             "start": {"date": "2019-10-20"},
             "end": {"date": "2019-04-21"},
             "summary": "MY TITLE",
@@ -270,6 +318,7 @@ def test_show_event_equals():
             "description": "Sometimes things happen",
         },
         {
+            # Wrong End Date
             "start": {"date": "2019-04-20"},
             "end": {"date": "2019-03-14"},
             "summary": "MY TITLE",
@@ -277,6 +326,7 @@ def test_show_event_equals():
             "description": "Sometimes things happen",
         },
         {
+            # Wrong Summary
             "start": {"date": "2019-04-20"},
             "end": {"date": "2019-04-21"},
             "summary": "YOUR TITLE",
@@ -284,6 +334,7 @@ def test_show_event_equals():
             "description": "Sometimes things happen",
         },
         {
+            # Wrong Recurrence
             "start": {"date": "2019-04-20"},
             "end": {"date": "2019-04-21"},
             "summary": "MY TITLE",
@@ -291,11 +342,63 @@ def test_show_event_equals():
             "description": "Sometimes things happen",
         },
         {
+            # Wrong Description
             "start": {"date": "2019-04-20"},
             "end": {"date": "2019-04-21"},
             "summary": "MY TITLE",
             "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
             "description": "Nothing ever happens",
+        },
+        {
+            # Missing Start
+            "end": {"date": "2019-04-21"},
+            "summary": "MY TITLE",
+            "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
+            "description": "Sometimes things happen",
+        },
+        {
+            # Missing End
+            "start": {"date": "2019-04-20"},
+            "summary": "MY TITLE",
+            "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
+            "description": "Sometimes things happen",
+        },
+        {
+            # Missing Start Date
+            "start": {},
+            "end": {"date": "2019-04-21"},
+            "summary": "MY TITLE",
+            "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
+            "description": "Sometimes things happen",
+        },
+        {
+            # Missing End Date
+            "start": {"date": "2019-04-20"},
+            "end": {},
+            "summary": "MY TITLE",
+            "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
+            "description": "Sometimes things happen",
+        },
+        {
+            # Missing Summary
+            "start": {"date": "2019-04-20"},
+            "end": {"date": "2019-04-21"},
+            "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
+            "description": "Sometimes things happen",
+        },
+        {
+            # Missing Recurrence
+            "start": {"date": "2019-04-20"},
+            "end": {"date": "2019-04-21"},
+            "summary": "MY TITLE",
+            "description": "Sometimes things happen",
+        },
+        {
+            # Missing Description
+            "start": {"date": "2019-04-20"},
+            "end": {"date": "2019-04-21"},
+            "summary": "MY TITLE",
+            "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
         },
     ],
 )

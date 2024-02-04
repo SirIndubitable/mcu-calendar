@@ -1,13 +1,18 @@
 """
 Pytests for yamlcalendar.py
 """
+
+# pylint: disable=missing-function-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=protected-access
+
 from pathlib import Path
 
 from mcu_calendar.events import GoogleMediaEvent
 from mcu_calendar.yamlcalendar import YamlCalendar
 
 
-class MockExecutor:
+class MockExecutor:  # pylint: disable=too-few-public-methods
     def execute(self, *_, **__):
         pass
 
@@ -28,8 +33,8 @@ class MockService:
 
 class MockEvent(GoogleMediaEvent):
     def __init__(self, title: str, description: str):
+        super().__init__(description)
         self.title = title
-        self.description = description
 
     def sort_val(self):
         return self.title
@@ -41,13 +46,13 @@ class MockEvent(GoogleMediaEvent):
 def test_get_movies():
     path = Path("data") / "mcu-movies"
     movies = YamlCalendar._get_movies(path)
-    assert len(movies) == len([p for p in path.iterdir()])
+    assert len(movies) == len(list(path.iterdir()))
 
 
 def test_get_shows():
     path = Path("data") / "mcu-shows"
     shows = YamlCalendar._get_shows(path)
-    assert len(shows) == len([p for p in path.iterdir()])
+    assert len(shows) == len(list(path.iterdir()))
 
 
 def test_create_google_event_add():

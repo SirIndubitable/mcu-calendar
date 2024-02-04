@@ -1,6 +1,7 @@
 """
 This script adds events to a google users calendar for Movies and TV shows defined in ./data/
 """
+
 import re
 from argparse import ArgumentParser
 from datetime import date, timedelta

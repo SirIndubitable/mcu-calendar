@@ -1,6 +1,7 @@
 """
 Google Event objects that represent different media release events
 """
+
 import datetime
 
 import yaml
@@ -58,7 +59,7 @@ class GoogleMediaEvent:
     def __eq__(self, other):
         if isinstance(other, GoogleMediaEvent):
             return self.description == other.description
-        return self.description == (other["description"] if "description" in other else "")
+        return self.description == other.get("description", "")
 
     def __ne__(self, other):
         return not self == other
@@ -99,9 +100,9 @@ class Movie(GoogleMediaEvent):
             return self.title == other.title and self.release_date == other.release_date
         event = self.to_google_event()
         return (
-            event["start"]["date"] == other["start"]["date"]
-            and event["end"]["date"] == other["end"]["date"]
-            and event["summary"] == other["summary"]
+            event.get("summary") == other.get("summary")
+            and event.get("start", {}).get("date") == other.get("start", {}).get("date")
+            and event.get("end", {}).get("date") == other.get("end", {}).get("date")
         )
 
     def __str__(self):
@@ -147,8 +148,10 @@ class Show(GoogleMediaEvent):
                 event_data["recurrence"] = [
                     f"RRULE:FREQ=WEEKLY;WKST=SU;COUNT={len(self.release_dates)};BYDAY={self._rfc5545_weekday()}"
                 ]
-            if recurrence == datetime.timedelta(days=1):
+            elif recurrence == datetime.timedelta(days=1):
                 event_data["recurrence"] = [f"RRULE:FREQ=DAILY;COUNT={len(self.release_dates)}"]
+            else:
+                event_data["recurrence"] = None
         else:
             event_data["recurrence"] = None
 
@@ -164,10 +167,10 @@ class Show(GoogleMediaEvent):
             return self.title == other.title and self.release_dates == other.release_dates
         event = self.to_google_event()
         return (
-            event["summary"] == other["summary"]
-            and event["start"]["date"] == other["start"]["date"]
-            and event["end"]["date"] == other["end"]["date"]
-            and event["recurrence"] == other["recurrence"]
+            event.get("summary") == other.get("summary")
+            and event.get("start", {}).get("date") == other.get("start", {}).get("date")
+            and event.get("end", {}).get("date") == other.get("end", {}).get("date")
+            and event.get("recurrence") == other.get("recurrence")
         )
 
     def __str__(self):
