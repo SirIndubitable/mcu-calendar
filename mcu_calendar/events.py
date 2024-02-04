@@ -100,8 +100,8 @@ class Movie(GoogleMediaEvent):
         event = self.to_google_event()
         return (
             event.get("summary") == other.get("summary")
-            and event.get("start", dict()).get("date") == other.get("start", dict()).get("date")
-            and event.get("end", dict()).get("date") == other.get("end", dict()).get("date")
+            and event.get("start", {}).get("date") == other.get("start", {}).get("date")
+            and event.get("end", {}).get("date") == other.get("end", {}).get("date")
         )
 
     def __str__(self):
@@ -167,8 +167,8 @@ class Show(GoogleMediaEvent):
         event = self.to_google_event()
         return (
             event.get("summary") == other.get("summary")
-            and event.get("start", dict()).get("date") == other.get("start", dict()).get("date")
-            and event.get("end", dict()).get("date") == other.get("end", dict()).get("date")
+            and event.get("start", {}).get("date") == other.get("start", {}).get("date")
+            and event.get("end", {}).get("date") == other.get("end", {}).get("date")
             and event.get("recurrence") == other.get("recurrence")
         )
 
