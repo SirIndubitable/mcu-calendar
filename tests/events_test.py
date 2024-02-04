@@ -97,28 +97,70 @@ def test_movie_event_equals():
     "event_dict",
     [
         {
+            # Wrong Start Date
             "start": {"date": "2019-10-20"},
             "end": {"date": "2019-04-21"},
             "summary": "MY TITLE",
             "description": "stuff happens",
         },
         {
+            # Wrong End Date
             "start": {"date": "2019-04-20"},
             "end": {"date": "2019-03-14"},
             "summary": "MY TITLE",
             "description": "stuff happens",
         },
         {
+            # Wrong Summary
             "start": {"date": "2019-04-20"},
             "end": {"date": "2019-04-21"},
             "summary": "YOUR TITLE",
             "description": "stuff happens",
         },
         {
+            # Wrong Description
             "start": {"date": "2019-04-20"},
             "end": {"date": "2019-04-21"},
             "summary": "MY TITLE",
             "description": "Something happens",
+        },
+        {
+            # Missing Start
+            "end": {"date": "2019-04-21"},
+            "summary": "MY TITLE",
+            "description": "stuff happens",
+        },
+        {
+            # Missing End
+            "start": {"date": "2019-04-20"},
+            "summary": "MY TITLE",
+            "description": "stuff happens",
+        },
+        {
+            # Missing Start Date
+            "start": dict(),
+            "end": {"date": "2019-04-21"},
+            "summary": "MY TITLE",
+            "description": "stuff happens",
+        },
+        {
+            # Missing End Date
+            "start": {"date": "2019-04-20"},
+            "end": dict(),
+            "summary": "MY TITLE",
+            "description": "stuff happens",
+        },
+        {
+            # Missing Summary
+            "start": {"date": "2019-04-20"},
+            "end": {"date": "2019-04-21"},
+            "description": "stuff happens",
+        },
+        {
+            # Missing Description
+            "start": {"date": "2019-04-20"},
+            "end": {"date": "2019-04-21"},
+            "summary": "MY TITLE",
         },
     ],
 )
@@ -263,6 +305,7 @@ def test_show_event_equals():
     "event_dict",
     [
         {
+            # Wrong Start Date
             "start": {"date": "2019-10-20"},
             "end": {"date": "2019-04-21"},
             "summary": "MY TITLE",
@@ -270,6 +313,7 @@ def test_show_event_equals():
             "description": "Sometimes things happen",
         },
         {
+            # Wrong End Date
             "start": {"date": "2019-04-20"},
             "end": {"date": "2019-03-14"},
             "summary": "MY TITLE",
@@ -277,6 +321,7 @@ def test_show_event_equals():
             "description": "Sometimes things happen",
         },
         {
+            # Wrong Summary
             "start": {"date": "2019-04-20"},
             "end": {"date": "2019-04-21"},
             "summary": "YOUR TITLE",
@@ -284,6 +329,7 @@ def test_show_event_equals():
             "description": "Sometimes things happen",
         },
         {
+            # Wrong Recurrence
             "start": {"date": "2019-04-20"},
             "end": {"date": "2019-04-21"},
             "summary": "MY TITLE",
@@ -291,11 +337,63 @@ def test_show_event_equals():
             "description": "Sometimes things happen",
         },
         {
+            # Wrong Description
             "start": {"date": "2019-04-20"},
             "end": {"date": "2019-04-21"},
             "summary": "MY TITLE",
             "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
             "description": "Nothing ever happens",
+        },
+        {
+            # Missing Start
+            "end": {"date": "2019-04-21"},
+            "summary": "MY TITLE",
+            "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
+            "description": "Sometimes things happen",
+        },
+        {
+            # Missing End
+            "start": {"date": "2019-04-20"},
+            "summary": "MY TITLE",
+            "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
+            "description": "Sometimes things happen",
+        },
+        {
+            # Missing Start Date
+            "start": dict(),
+            "end": {"date": "2019-04-21"},
+            "summary": "MY TITLE",
+            "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
+            "description": "Sometimes things happen",
+        },
+        {
+            # Missing End Date
+            "start": {"date": "2019-04-20"},
+            "end": dict(),
+            "summary": "MY TITLE",
+            "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
+            "description": "Sometimes things happen",
+        },
+        {
+            # Missing Summary
+            "start": {"date": "2019-04-20"},
+            "end": {"date": "2019-04-21"},
+            "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
+            "description": "Sometimes things happen",
+        },
+        {
+            # Missing Recurrence
+            "start": {"date": "2019-04-20"},
+            "end": {"date": "2019-04-21"},
+            "summary": "MY TITLE",
+            "description": "Sometimes things happen",
+        },
+        {
+            # Missing Description
+            "start": {"date": "2019-04-20"},
+            "end": {"date": "2019-04-21"},
+            "summary": "MY TITLE",
+            "recurrence": "RRULE:FREQ=WEEKLY;WKST=SU;COUNT=6;BYDAY=SA",
         },
     ],
 )
