@@ -4,6 +4,7 @@ This script adds events to a google users calendar for Movies and TV shows defin
 
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import Dict
 
 import yaml
 
@@ -14,7 +15,7 @@ from mcu_calendar.yamlcalendar import YamlCalendar
 SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
 
 
-def get_cal_ids(dry: bool):
+def get_cal_ids(dry: bool) -> Dict[str, str]:
     """
     Gets the ID of the calendar that this script should write to.  This ID should
     belong to the user that logged in from get_google_creds()
@@ -44,7 +45,7 @@ def get_cal_ids(dry: bool):
     }
 
 
-def main(dry: bool, force: bool):
+def main(dry: bool, force: bool) -> None:
     """
     Main method that updates the users google calendar
     """

@@ -5,7 +5,7 @@ Generic helper methods that eny of the modules here might want to use
 from rich.progress import BarColumn, Progress, TimeElapsedColumn
 
 
-def create_progress():
+def create_progress() -> Progress:
     """
     Factory method for a Rich Process object
     """
@@ -17,7 +17,7 @@ def create_progress():
     )
 
 
-def truncate(string, length):
+def truncate(string: str, length: int) -> str:
     """
     Truncates a string to a given length with "..." at the end if needed
     """

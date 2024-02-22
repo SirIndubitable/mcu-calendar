@@ -8,6 +8,7 @@ Pytests for events.py
 
 import datetime
 from pathlib import Path
+from typing import Any, Dict
 
 import pytest
 
@@ -25,14 +26,14 @@ from mcu_calendar.events import Movie, Show
         *(Path("data") / "dceu-movies").iterdir(),
     ],
 )
-def test_movies_yaml(movie_path: Path):
+def test_movies_yaml(movie_path: Path) -> None:
     movie = Movie.from_yaml(movie_path)
     assert isinstance(movie.title, str)
     assert isinstance(movie.release_date, datetime.date)
     assert isinstance(movie.description, str)
 
 
-def test_movies_equals():
+def test_movies_equals() -> None:
     movie1 = Movie(
         title="MY TITLE",
         release_date=datetime.date(2019, 4, 20),
@@ -69,7 +70,7 @@ def test_movies_equals():
         },
     ],
 )
-def test_movies_not_equals(movie_dict):
+def test_movies_not_equals(movie_dict: Dict[str, Any]) -> None:
     movie1 = Movie(
         title="MY TITLE",
         release_date=datetime.date(2019, 4, 20),
@@ -80,7 +81,7 @@ def test_movies_not_equals(movie_dict):
     assert not movie1 == movie2
 
 
-def test_movie_event_equals():
+def test_movie_event_equals() -> None:
     movie = Movie(
         title="MY TITLE",
         release_date=datetime.date(2019, 4, 20),
@@ -169,7 +170,7 @@ def test_movie_event_equals():
         },
     ],
 )
-def test_movie_event_not_equals(event_dict):
+def test_movie_event_not_equals(event_dict: Dict[str, Any]) -> None:
     movie = Movie(
         title="MY TITLE",
         release_date=datetime.date(2019, 4, 20),
@@ -189,7 +190,7 @@ def test_movie_event_not_equals(event_dict):
         *(Path("data") / "starwars-shows").iterdir(),
     ],
 )
-def test_shows_yaml(show_path: Path):
+def test_shows_yaml(show_path: Path) -> None:
     show = Show.from_yaml(show_path)
     assert isinstance(show.title, str)
     assert isinstance(show.release_dates, list)
@@ -198,7 +199,7 @@ def test_shows_yaml(show_path: Path):
     assert isinstance(show.description, str)
 
 
-def test_shows_equals():
+def test_shows_equals() -> None:
     show1 = Show(
         title="MY TITLE",
         release_dates=[
@@ -266,7 +267,7 @@ def test_shows_equals():
         },
     ],
 )
-def test_shows_not_equals(show_dict):
+def test_shows_not_equals(show_dict: Dict[str, Any]) -> None:
     show1 = Show(
         title="MY TITLE",
         release_dates=[
@@ -281,7 +282,7 @@ def test_shows_not_equals(show_dict):
     assert show1 != show2
 
 
-def test_show_event_equals():
+def test_show_event_equals() -> None:
     show = Show(
         title="MY TITLE",
         release_dates=[
@@ -402,7 +403,7 @@ def test_show_event_equals():
         },
     ],
 )
-def test_show_event_not_equals(event_dict):
+def test_show_event_not_equals(event_dict: Dict[str, Any]) -> None:
     show = Show(
         title="MY TITLE",
         release_dates=[
@@ -470,7 +471,7 @@ def test_show_event_not_equals(event_dict):
         ),
     ],
 )
-def test_show_recurrence(event, recurrence):
+def test_show_recurrence(event: Dict[str, Any], recurrence: str) -> None:
     show = Show(**event)
     google_event = show.to_google_event()
     if recurrence is None:

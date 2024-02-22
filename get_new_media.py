@@ -6,6 +6,7 @@ import re
 from argparse import ArgumentParser
 from datetime import date, timedelta
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
@@ -14,6 +15,7 @@ from mcu_calendar.webscraping import (
     Companies,
     Keyword,
     MovieGenre,
+    TmdbObj,
     TvGenre,
     get_mcu_movie_link,
     get_mcu_show_link,
@@ -22,7 +24,7 @@ from mcu_calendar.webscraping import (
 )
 
 
-def str_presenter(dumper, data):
+def str_presenter(dumper: Union[yaml.Dumper, yaml.representer.SafeRepresenter], data: Any) -> yaml.Node:
     """
     configures yaml for dumping multiline strings
     Ref: https://stackoverflow.com/questions/8640959/how-can-i-control-what-scalar-form-pyyaml-uses-for-my-data
@@ -36,7 +38,7 @@ yaml.add_representer(str, str_presenter)
 yaml.representer.SafeRepresenter.add_representer(str, str_presenter)  # to use with safe_dum
 
 
-def get_safe_title(title: str):
+def get_safe_title(title: str) -> str:
     """
     Gets a url-safe title (mostly trying to match the format I already had)
     """
@@ -47,7 +49,7 @@ def get_safe_title(title: str):
     return safe_title
 
 
-def get_release_date(movie, region):
+def get_release_date(movie: TmdbObj, region: str) -> Optional[date]:
     """
     Gets the release date for the given region if the details exist, otherwise
     returns the default release_date
@@ -67,7 +69,7 @@ def get_release_date(movie, region):
         return None
 
 
-def make_movie_yamls(dir_path: Path, movies: list):
+def make_movie_yamls(dir_path: Path, movies: List[TmdbObj]) -> None:
     """
     Makes the movie yamls for each movie from the json data
     """
@@ -90,19 +92,19 @@ def make_movie_yamls(dir_path: Path, movies: list):
             yaml.safe_dump(movie_data, yaml_file, sort_keys=False)
 
 
-def get_season_release_dates(season):
+def get_season_release_dates(season: TmdbObj) -> List[date]:
     """
     Gets the number of distinct weeks in a given season
     """
     air_dates = set()
     for episode in season.episodes:
         air_dates.add(date.fromisoformat(episode.air_date))
-    air_dates = list(air_dates)
-    air_dates.sort()
-    return air_dates
+    air_dates_list = list(air_dates)
+    air_dates_list.sort()
+    return air_dates_list
 
 
-def make_show_yamls(dir_path: Path, shows: list):
+def make_show_yamls(dir_path: Path, shows: List[TmdbObj]) -> None:
     """
     Makes the show yamls for each season from the show json data
     """
@@ -130,11 +132,11 @@ def make_show_yamls(dir_path: Path, shows: list):
                 yaml.safe_dump(show_data, yaml_file, sort_keys=False)
 
 
-def get_new_media(release_date_gte: date):
+def get_new_media(release_date_gte: date) -> None:
     """
     Gets all new media given the query definitions
     """
-    movie_queries = {
+    movie_queries: Dict[str, Dict[str, Any]] = {
         "mcu-movies": {
             "with_companies": Companies.MARVEL_STUDIOS.value,
             "without_genres": MovieGenre.DOCUMENTARY.value,
@@ -152,7 +154,7 @@ def get_new_media(release_date_gte: date):
         },
     }
 
-    show_queries = {
+    show_queries: Dict[str, Dict[str, Any]] = {
         "mcu-shows": {
             "with_companies": f"{Companies.MARVEL_STUDIOS.value} | {Companies.MARVEL_STUDIOS_ANIMATION.value}",
             "without_genres": f"{TvGenre.DOCUMENTARY.value}, {TvGenre.KIDS.value}",
