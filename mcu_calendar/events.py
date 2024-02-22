@@ -40,7 +40,7 @@ class GoogleMediaEvent(ABC):
         return {**base_event, **self._to_google_event_core()}
 
     @staticmethod
-    def load_yaml(yaml_path: Path) -> dict:
+    def load_yaml(yaml_path: Path) -> Dict[str, Any]:
         """
         Factory method to create a Show object from yaml
         """
@@ -53,7 +53,7 @@ class GoogleMediaEvent(ABC):
         return yaml_data
 
     @abstractmethod
-    def _to_google_event_core(self) -> dict:
+    def _to_google_event_core(self) -> Dict[str, Any]:
         """
         The method that subclasses should override for baseclass specific
         google calendar api event data
@@ -91,7 +91,7 @@ class Movie(GoogleMediaEvent):
         yaml_data = GoogleMediaEvent.load_yaml(yaml_path)
         return Movie(**yaml_data)
 
-    def _to_google_event_core(self) -> dict:
+    def _to_google_event_core(self) -> Dict[str, Any]:
         return {
             "start": {"date": self.release_date.isoformat()},
             "end": {"date": (self.release_date + timedelta(days=1)).isoformat()},
@@ -138,8 +138,8 @@ class Show(GoogleMediaEvent):
         _recurrence_weekday = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"]
         return _recurrence_weekday[self.start_date.weekday()]
 
-    def _to_google_event_core(self) -> dict:
-        event_data: dict = {
+    def _to_google_event_core(self) -> Dict[str, Any]:
+        event_data: Dict[str, Any] = {
             "start": {"date": self.start_date.isoformat()},
             "end": {"date": (self.start_date + timedelta(days=1)).isoformat()},
         }
