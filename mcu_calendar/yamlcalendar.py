@@ -4,7 +4,7 @@ Calendars objects that sync data to a google Calendar
 
 from datetime import date
 from pathlib import Path
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Sequence
 
 from .events import GoogleMediaEvent, Movie, Show
 from .helpers import create_progress, truncate
@@ -39,14 +39,14 @@ class YamlCalendar:
         return [factory(f) for f in folder.iterdir()]
 
     @staticmethod
-    def _get_movies(folder: Path) -> List[Movie]:
+    def _get_movies(folder: Path) -> Sequence[Movie]:
         """
         Gets all Movie objects defined in the yaml files in ./data/movies
         """
         return YamlCalendar._get_objects_from_data(folder, Movie.from_yaml)
 
     @staticmethod
-    def _get_shows(folder: Path) -> List[Show]:
+    def _get_shows(folder: Path) -> Sequence[Show]:
         """
         Gets all Show objects defined in the yaml files in ./data/shows
         """
@@ -62,14 +62,14 @@ class YamlCalendar:
     def _create_google_event(
         self,
         progress_title: str,
-        items: List[GoogleMediaEvent],
+        items: Sequence[GoogleMediaEvent],
         existing_events: List[Dict],
         force: bool,
-    ):
+    ) -> None:
         """
         Creates or Updates events if needed on the calendar based on the items objects
         """
-        items.sort(key=lambda i: i.sort_val())
+        items = sorted(items, key=lambda i: i.sort_val())
         with create_progress() as progress:
             for item in progress.track(items, description=progress_title):
                 event = next(

@@ -5,10 +5,12 @@ This script provides helper methods for accessing themoviedb.org data about the 
 import os
 from enum import Enum
 from functools import wraps
+from typing import Any, Callable, Dict, List, Optional
 from urllib.parse import quote_plus as url_encode
 
 import requests
 from tmdbv3api import TV, Discover, Movie, Season
+from tmdbv3api.as_obj import AsObj as TmdbObj
 
 
 class Companies(Enum):
@@ -98,13 +100,15 @@ class TvGenre(Enum):
     WESTERN = 37
 
 
-def query_all_pages(func):
+def query_all_pages(
+    func: Callable[[Discover, int, Dict[str, Any]], List[TmdbObj]]
+) -> Callable[[Dict[str, Any]], List[TmdbObj]]:
     """
     Function decorator that aggregates the results of func over multiple pages
     """
 
     @wraps(func)
-    def wrapper(payload: dict = {}):
+    def wrapper(payload: Dict[str, Any] = {}) -> List[TmdbObj]:
         discoverer = Discover()
         page = 0
         data = []
@@ -121,7 +125,7 @@ def query_all_pages(func):
 
 
 @query_all_pages
-def _discover_movies(discoverer, page, payload: dict):
+def _discover_movies(discoverer: Discover, page: int, payload: Dict[str, Any]) -> List[TmdbObj]:
     """
     Discovers movies from TMDB on all pages
     """
@@ -134,7 +138,7 @@ def _discover_movies(discoverer, page, payload: dict):
 
 
 @query_all_pages
-def _discover_shows(discoverer, page, payload: dict):
+def _discover_shows(discoverer: Discover, page: int, payload: Dict[str, Any]) -> List[TmdbObj]:
     """
     Discovers shows from TMDB on all pages
     """
@@ -148,7 +152,7 @@ def _discover_shows(discoverer, page, payload: dict):
     return discoverer.discover_tv_shows({**base_payload, **payload})
 
 
-def get_movies(payload={}):
+def get_movies(payload: Dict[str, Any]) -> List[TmdbObj]:
     """
     Gets movies from themoviedb.org with the given keyword
     """
@@ -162,7 +166,7 @@ def get_movies(payload={}):
     return movie_details
 
 
-def should_skip(season, payload):
+def should_skip(season: TmdbObj, payload: Dict[str, Any]) -> bool:
     """
     Checks if the given season should be skipped based on the payload filter criteria
     """
@@ -175,7 +179,7 @@ def should_skip(season, payload):
     return False
 
 
-def get_shows(payload={}):
+def get_shows(payload: Dict[str, Any]) -> List[TmdbObj]:
     """
     Gets tv shwos from themoviedb.org with the given keyword
     """
@@ -204,7 +208,7 @@ MARVEL_MOVIES_CX = "0ea857e1a2f692afa"
 GOOGLE_SEARCH_FOMRAT = "https://www.googleapis.com/customsearch/v1?key={api_key}&cx={cx}&q={query}"
 
 
-def get_mcu_movie_link(movie):
+def get_mcu_movie_link(movie: TmdbObj) -> Optional[str]:
     """
     Searches google to try to find the official webpage for the given mcu movie
     """
@@ -215,7 +219,7 @@ def get_mcu_movie_link(movie):
     )
 
 
-def get_mcu_show_link(show, season):
+def get_mcu_show_link(show: TmdbObj, season: TmdbObj) -> Optional[str]:
     """
     Searches google to try to find the official webpage for the given mcu show/season
     """
@@ -226,7 +230,7 @@ def get_mcu_show_link(show, season):
     )
 
 
-def __get_search_link(name, search_id, query):
+def __get_search_link(name: str, search_id: str, query: str) -> Optional[str]:
     """
     Gets the first link for the query with a title that matches the given name
     """
