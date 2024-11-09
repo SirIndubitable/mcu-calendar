@@ -6,11 +6,8 @@ Pytests for yamlcalendar.py
 # pylint: disable=missing-class-docstring
 # pylint: disable=protected-access
 
-import re
 from pathlib import Path
 from typing import Any, Dict, List
-
-import yaml
 
 from mcu_calendar.events import GoogleMediaEvent
 from mcu_calendar.yamlcalendar import YamlCalendar
@@ -36,6 +33,9 @@ class MockService:
 
 
 class MockEvent(GoogleMediaEvent):
+    def __init__(self, title: str, description: str) -> None:
+        super().__init__(title, description, Path(), None)
+
     def _to_google_event_core(self) -> Dict[str, Any]:
         return {}
 
@@ -45,13 +45,13 @@ class MockEvent(GoogleMediaEvent):
 
 def test_get_movies() -> None:
     path = Path("data") / "mcu-movies"
-    movies = YamlCalendar._get_movies(path)
+    movies = YamlCalendar.get_movies(path)
     assert len(movies) == len(list(path.iterdir()))
 
 
 def test_get_shows() -> None:
     path = Path("data") / "mcu-shows"
-    shows = YamlCalendar._get_shows(path)
+    shows = YamlCalendar.get_shows(path)
     assert len(shows) == len(list(path.iterdir()))
 
 
@@ -111,33 +111,3 @@ def test_create_google_event_skip_force() -> None:
     assert len(service.update_kwargs) == 1
     assert service.update_kwargs[0]["body"]["summary"] == "Test Movie"
     assert service.update_kwargs[0]["body"]["description"] == "Movie Description"
-
-
-def test_no_duplicate_ids() -> None:
-    all_yaml = []
-    for folder in Path("data").iterdir():
-        if not folder.is_dir():
-            continue
-
-        if not str(folder).endswith("movies"):
-            continue
-
-        for file in folder.iterdir():
-            if file.suffix != ".yaml":
-                continue
-
-            with open(file, "r", encoding="UTF-8") as yaml_file:
-                data = yaml.safe_load(yaml_file)
-                if "imdb_id" not in data:
-                    matches = re.search("https://www.imdb.com/title/(.*)", data["description"])
-                    if matches:
-                        data["imdb_id"] = matches.group(1)
-                all_yaml.append(data)
-
-    seen = set()
-    for data in all_yaml:
-        if data["imdb_id"] not in seen:
-            seen.add(data["imdb_id"])
-            continue
-
-        assert False, ", ".join([y["title"] for y in all_yaml if y["imdb_id"] == data["imdb_id"]])

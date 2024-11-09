@@ -6,10 +6,11 @@ import re
 from argparse import ArgumentParser
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import yaml
 
+from mcu_calendar.events import GoogleMediaEvent
 from mcu_calendar.helpers import create_progress
 from mcu_calendar.webscraping import (
     Companies,
@@ -22,6 +23,7 @@ from mcu_calendar.webscraping import (
     get_movies,
     get_shows,
 )
+from mcu_calendar.yamlcalendar import YamlCalendar
 
 
 def str_presenter(dumper: Union[yaml.Dumper, yaml.representer.SafeRepresenter], data: Any) -> yaml.Node:
@@ -69,30 +71,14 @@ def get_release_date(movie: TmdbObj, region: str) -> Optional[date]:
         return None
 
 
-def load_yaml(yaml_path: Path) -> Dict:
-    """
-    Loads a yaml file for media, and returns the data as a dictionary
-    """
-    with open(yaml_path, "r", encoding="UTF-8") as yaml_file:
-        data = yaml.safe_load(yaml_file)
-    data["file_path"] = yaml_path
-
-    if "imdb_id" not in data:
-        matches = re.search("https://www.imdb.com/title/(.*)", data["description"])
-        if matches:
-            data["imdb_id"] = matches.group()
-
-    return data
-
-
-def handle_stale_yaml(existing: List[Dict], data: Dict, yaml_path: Path) -> None:
+def handle_stale_yaml(existing: Sequence[GoogleMediaEvent], data: Dict, yaml_path: Path) -> None:
     """
     Removes the yaml file if it is stale
     """
-    if any((e["file_path"] == yaml_path for e in existing)):
+    if any((e.file_path == yaml_path for e in existing)):
         return
 
-    needs_rename = next(("imdb_id" in e and e["imdb_id"] == data["imdb_id"] for e in existing), None)
+    needs_rename = next((e.imdb_id == data["imdb_id"] for e in existing), None)
     if not needs_rename:
         return
 
@@ -103,7 +89,7 @@ def make_movie_yamls(dir_path: Path, movies: List[TmdbObj]) -> None:
     """
     Makes the movie yamls for each movie from the json data
     """
-    existing_movies = [load_yaml(f) for f in dir_path.iterdir()]
+    existing_movies = YamlCalendar.get_movies(dir_path)
 
     for movie in movies:
         if movie.imdb_id is None:
