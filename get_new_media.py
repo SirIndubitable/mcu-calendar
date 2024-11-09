@@ -69,11 +69,45 @@ def get_release_date(movie: TmdbObj, region: str) -> Optional[date]:
         return None
 
 
+def load_yaml(yaml_path: Path) -> Dict:
+    """
+    Loads a yaml file for media, and returns the data as a dictionary
+    """
+    with open(yaml_path, "r", encoding="UTF-8") as yaml_file:
+        data = yaml.safe_load(yaml_file)
+    data["file_path"] = yaml_path
+
+    if "imdb_id" not in data:
+        matches = re.search("https://www.imdb.com/title/(.*)", data["description"])
+        if matches:
+            data["imdb_id"] = matches.group()
+
+    return data
+
+
+def handle_stale_yaml(existing: List[Dict], data: Dict, yaml_path: Path) -> None:
+    """
+    Removes the yaml file if it is stale
+    """
+    if any((e["file_path"] == yaml_path for e in existing)):
+        return
+
+    needs_rename = next(("imdb_id" in e and e["imdb_id"] == data["imdb_id"] for e in existing), None)
+    if not needs_rename:
+        return
+
+    needs_rename["file_path"].rename(yaml_path)
+
+
 def make_movie_yamls(dir_path: Path, movies: List[TmdbObj]) -> None:
     """
     Makes the movie yamls for each movie from the json data
     """
+    existing_movies = [load_yaml(f) for f in dir_path.iterdir()]
+
     for movie in movies:
+        if movie.imdb_id is None:
+            continue
         release_date = get_release_date(movie, "US")
         if release_date is None:
             continue
@@ -81,12 +115,15 @@ def make_movie_yamls(dir_path: Path, movies: List[TmdbObj]) -> None:
         movie_data = {
             "title": movie.title,
             "release_date": release_date,
+            "imdb_id": movie.imdb_id,
             "description": f"https://www.imdb.com/title/{movie.imdb_id}\n",
         }
         if dir_path.stem == "mcu-movies":
             official_link = get_mcu_movie_link(movie)
             if official_link is not None:
                 movie_data["description"] += f"{official_link}\n"
+
+        handle_stale_yaml(existing_movies, movie_data, yaml_path)
 
         with open(yaml_path, "w", encoding="UTF-8") as yaml_file:
             yaml.safe_dump(movie_data, yaml_file, sort_keys=False)
@@ -115,6 +152,7 @@ def make_show_yamls(dir_path: Path, shows: List[TmdbObj]) -> None:
             show_data = {
                 "title": show.name,
                 "release_dates": get_season_release_dates(season),
+                "imdb_id": show.external_ids.imdb_id,
                 "description": f"https://www.imdb.com/title/{show.external_ids.imdb_id}\n",
             }
             if dir_path.stem == "mcu-shows":

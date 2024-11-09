@@ -9,6 +9,11 @@ run:
 	$(info ************  Running        ************)
 	@python main.py
 
+webscrape:
+	$(info )
+	$(info ************  Running        ************)
+	@python get_new_media.py
+
 force:
 	$(info )
 	$(info ************  Running(force) ************)

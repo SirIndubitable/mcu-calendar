@@ -19,7 +19,8 @@ class GoogleMediaEvent(ABC):
     Base class for a google event that is defined in yaml
     """
 
-    def __init__(self, title: str, description: str) -> None:
+    # pylint: disable=unused-argument
+    def __init__(self, title: str, description: str, **kwargs: dict) -> None:
         self.title = title
         self.description = description
 
@@ -79,8 +80,8 @@ class Movie(GoogleMediaEvent):
     The event that describes a movie release date
     """
 
-    def __init__(self, title: str, description: str, release_date: date) -> None:
-        super().__init__(title, description)
+    def __init__(self, title: str, description: str, release_date: date, **kwargs: dict) -> None:
+        super().__init__(title, description, **kwargs)
         self.release_date = release_date
 
     @staticmethod
@@ -121,8 +122,8 @@ class Show(GoogleMediaEvent):
     The event that describes a show start date and how many weeks it runs for
     """
 
-    def __init__(self, title: str, release_dates: List[date], description: str) -> None:
-        super().__init__(title, description)
+    def __init__(self, title: str, release_dates: List[date], description: str, **kwargs: dict) -> None:
+        super().__init__(title, description, **kwargs)
         self.release_dates = release_dates
         self.start_date = release_dates[0]
 
