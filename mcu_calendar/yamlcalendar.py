@@ -39,14 +39,14 @@ class YamlCalendar:
         return [factory(f) for f in folder.iterdir()]
 
     @staticmethod
-    def _get_movies(folder: Path) -> Sequence[Movie]:
+    def get_movies(folder: Path) -> Sequence[Movie]:
         """
         Gets all Movie objects defined in the yaml files in ./data/movies
         """
         return YamlCalendar._get_objects_from_data(folder, Movie.from_yaml)
 
     @staticmethod
-    def _get_shows(folder: Path) -> Sequence[Show]:
+    def get_shows(folder: Path) -> Sequence[Show]:
         """
         Gets all Show objects defined in the yaml files in ./data/shows
         """
@@ -97,8 +97,8 @@ class YamlCalendar:
         """
         print("    UPDATING", self.name)
         cur_events = self._get_google_events()
-        movies = [m for mdir in self.movie_dirs for m in YamlCalendar._get_movies(mdir)]
-        shows = [s for sdir in self.show_dirs for s in YamlCalendar._get_shows(sdir)]
+        movies = [m for mdir in self.movie_dirs for m in YamlCalendar.get_movies(mdir)]
+        shows = [s for sdir in self.show_dirs for s in YamlCalendar.get_shows(sdir)]
         self._create_google_event("[bold]Movies..", movies, cur_events, force=force)
         self._create_google_event("[bold]Shows...", shows, cur_events, force=force)
 

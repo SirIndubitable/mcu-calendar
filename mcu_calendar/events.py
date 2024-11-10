@@ -7,6 +7,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from datetime import date, timedelta
 from pathlib import Path
+from re import search as re_search
 from typing import Any, Dict, List
 
 import yaml
@@ -19,9 +20,16 @@ class GoogleMediaEvent(ABC):
     Base class for a google event that is defined in yaml
     """
 
-    def __init__(self, title: str, description: str) -> None:
+    def __init__(self, title: str, description: str, file_path: Path, imdb_id: str | None) -> None:
         self.title = title
         self.description = description
+        self.imdb_id = imdb_id
+        self.file_path = file_path
+
+        if not self.imdb_id:
+            matches = re_search("https://www.imdb.com/title/(.*)", self.description)
+            if matches:
+                self.imdb_id = matches.group(1)
 
     def to_google_event(self) -> Dict[str, Any]:
         """
@@ -79,8 +87,11 @@ class Movie(GoogleMediaEvent):
     The event that describes a movie release date
     """
 
-    def __init__(self, title: str, description: str, release_date: date) -> None:
-        super().__init__(title, description)
+    # pylint: disable=too-many-arguments
+    def __init__(
+        self, title: str, description: str, release_date: date, file_path: Path, imdb_id: str | None = None
+    ) -> None:
+        super().__init__(title, description, file_path, imdb_id)
         self.release_date = release_date
 
     @staticmethod
@@ -89,7 +100,7 @@ class Movie(GoogleMediaEvent):
         Factory method to create a Movie object from yaml
         """
         yaml_data = GoogleMediaEvent.load_yaml(yaml_path)
-        return Movie(**yaml_data)
+        return Movie(**yaml_data, file_path=yaml_path)
 
     def _to_google_event_core(self) -> Dict[str, Any]:
         return {
@@ -121,8 +132,11 @@ class Show(GoogleMediaEvent):
     The event that describes a show start date and how many weeks it runs for
     """
 
-    def __init__(self, title: str, release_dates: List[date], description: str) -> None:
-        super().__init__(title, description)
+    # pylint: disable=too-many-arguments
+    def __init__(
+        self, title: str, release_dates: List[date], description: str, file_path: Path, imdb_id: str | None = None
+    ) -> None:
+        super().__init__(title, description, file_path, imdb_id)
         self.release_dates = release_dates
         self.start_date = release_dates[0]
 
@@ -132,7 +146,7 @@ class Show(GoogleMediaEvent):
         Factory method to create a Show object from yaml
         """
         yaml_data = GoogleMediaEvent.load_yaml(yaml_path)
-        return Show(**yaml_data)
+        return Show(**yaml_data, file_path=yaml_path)
 
     def _rfc5545_weekday(self) -> str:
         _recurrence_weekday = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"]

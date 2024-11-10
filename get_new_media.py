@@ -6,10 +6,11 @@ import re
 from argparse import ArgumentParser
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import yaml
 
+from mcu_calendar.events import GoogleMediaEvent
 from mcu_calendar.helpers import create_progress
 from mcu_calendar.webscraping import (
     Companies,
@@ -22,6 +23,7 @@ from mcu_calendar.webscraping import (
     get_movies,
     get_shows,
 )
+from mcu_calendar.yamlcalendar import YamlCalendar
 
 
 def str_presenter(dumper: Union[yaml.Dumper, yaml.representer.SafeRepresenter], data: Any) -> yaml.Node:
@@ -69,11 +71,29 @@ def get_release_date(movie: TmdbObj, region: str) -> Optional[date]:
         return None
 
 
+def handle_stale_yaml(existing: Sequence[GoogleMediaEvent], data: Dict, yaml_path: Path) -> None:
+    """
+    Removes the yaml file if it is stale
+    """
+    if any((e.file_path == yaml_path for e in existing)):
+        return
+
+    needs_rename = next((e.imdb_id == data["imdb_id"] for e in existing), None)
+    if not needs_rename:
+        return
+
+    needs_rename["file_path"].rename(yaml_path)
+
+
 def make_movie_yamls(dir_path: Path, movies: List[TmdbObj]) -> None:
     """
     Makes the movie yamls for each movie from the json data
     """
+    existing_movies = YamlCalendar.get_movies(dir_path)
+
     for movie in movies:
+        if movie.imdb_id is None:
+            continue
         release_date = get_release_date(movie, "US")
         if release_date is None:
             continue
@@ -81,12 +101,15 @@ def make_movie_yamls(dir_path: Path, movies: List[TmdbObj]) -> None:
         movie_data = {
             "title": movie.title,
             "release_date": release_date,
+            "imdb_id": movie.imdb_id,
             "description": f"https://www.imdb.com/title/{movie.imdb_id}\n",
         }
         if dir_path.stem == "mcu-movies":
             official_link = get_mcu_movie_link(movie)
             if official_link is not None:
                 movie_data["description"] += f"{official_link}\n"
+
+        handle_stale_yaml(existing_movies, movie_data, yaml_path)
 
         with open(yaml_path, "w", encoding="UTF-8") as yaml_file:
             yaml.safe_dump(movie_data, yaml_file, sort_keys=False)
@@ -115,6 +138,7 @@ def make_show_yamls(dir_path: Path, shows: List[TmdbObj]) -> None:
             show_data = {
                 "title": show.name,
                 "release_dates": get_season_release_dates(season),
+                "imdb_id": show.external_ids.imdb_id,
                 "description": f"https://www.imdb.com/title/{show.external_ids.imdb_id}\n",
             }
             if dir_path.stem == "mcu-shows":

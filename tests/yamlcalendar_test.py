@@ -33,6 +33,9 @@ class MockService:
 
 
 class MockEvent(GoogleMediaEvent):
+    def __init__(self, title: str, description: str) -> None:
+        super().__init__(title, description, Path(), None)
+
     def _to_google_event_core(self) -> Dict[str, Any]:
         return {}
 
@@ -42,13 +45,13 @@ class MockEvent(GoogleMediaEvent):
 
 def test_get_movies() -> None:
     path = Path("data") / "mcu-movies"
-    movies = YamlCalendar._get_movies(path)
+    movies = YamlCalendar.get_movies(path)
     assert len(movies) == len(list(path.iterdir()))
 
 
 def test_get_shows() -> None:
     path = Path("data") / "mcu-shows"
-    shows = YamlCalendar._get_shows(path)
+    shows = YamlCalendar.get_shows(path)
     assert len(shows) == len(list(path.iterdir()))
 
 

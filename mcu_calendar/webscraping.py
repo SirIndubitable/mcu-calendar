@@ -234,6 +234,9 @@ def __get_search_link(name: str, search_id: str, query: str) -> Optional[str]:
     """
     Gets the first link for the query with a title that matches the given name
     """
+    if "GOOGLE_SEARCH_API_KEY" not in os.environ:
+        return None
+
     result = requests.get(
         GOOGLE_SEARCH_FOMRAT.format(
             api_key=os.environ["GOOGLE_SEARCH_API_KEY"],
