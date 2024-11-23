@@ -29,7 +29,7 @@ class GoogleMediaEvent(ABC):
         if not self.imdb_id:
             matches = re_search("https://www.imdb.com/title/(.*)", self.description)
             if matches:
-                self.imdb_id = matches.group(1)
+                self.imdb_id = matches.group(1).strip()
 
     def to_google_event(self) -> Dict[str, Any]:
         """
