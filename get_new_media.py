@@ -78,11 +78,11 @@ def handle_stale_yaml(existing: Sequence[GoogleMediaEvent], data: Dict, yaml_pat
     if any((e.file_path == yaml_path for e in existing)):
         return
 
-    needs_rename = next((e.imdb_id == data["imdb_id"] for e in existing), None)
+    needs_rename = next((e for e in existing if e.imdb_id == data["imdb_id"]), None)
     if not needs_rename:
         return
 
-    needs_rename["file_path"].rename(yaml_path)
+    needs_rename.file_path.rename(yaml_path)
 
 
 def make_movie_yamls(dir_path: Path, movies: List[TmdbObj]) -> None:
@@ -101,7 +101,7 @@ def make_movie_yamls(dir_path: Path, movies: List[TmdbObj]) -> None:
         movie_data = {
             "title": movie.title,
             "release_date": release_date,
-            "imdb_id": movie.imdb_id,
+            "imdb_id": movie.imdb_id.strip(),
             "description": f"https://www.imdb.com/title/{movie.imdb_id}\n",
         }
         if dir_path.stem == "mcu-movies":
@@ -121,7 +121,8 @@ def get_season_release_dates(season: TmdbObj) -> List[date]:
     """
     air_dates = set()
     for episode in season.episodes:
-        air_dates.add(date.fromisoformat(episode.air_date))
+        if episode.air_date:
+            air_dates.add(date.fromisoformat(episode.air_date))
     air_dates_list = list(air_dates)
     air_dates_list.sort()
     return air_dates_list
@@ -132,7 +133,7 @@ def make_show_yamls(dir_path: Path, shows: List[TmdbObj]) -> None:
     Makes the show yamls for each season from the show json data
     """
     for show in shows:
-        # print(movie)
+        # print(show.name)
         safe_title = get_safe_title(show.name)
         for season in show.seasons:
             show_data = {
