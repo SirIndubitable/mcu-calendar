@@ -121,7 +121,8 @@ def get_season_release_dates(season: TmdbObj) -> List[date]:
     """
     air_dates = set()
     for episode in season.episodes:
-        air_dates.add(date.fromisoformat(episode.air_date))
+        if episode.air_date:
+            air_dates.add(date.fromisoformat(episode.air_date))
     air_dates_list = list(air_dates)
     air_dates_list.sort()
     return air_dates_list
@@ -132,7 +133,7 @@ def make_show_yamls(dir_path: Path, shows: List[TmdbObj]) -> None:
     Makes the show yamls for each season from the show json data
     """
     for show in shows:
-        # print(movie)
+        # print(show.name)
         safe_title = get_safe_title(show.name)
         for season in show.seasons:
             show_data = {
