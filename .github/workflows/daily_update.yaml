@@ -32,13 +32,11 @@ jobs:
           GOOGLE_SEARCH_API_KEY: ${{ secrets.GOOGLE_SEARCH_API_KEY }}
 
       - name: Create Pull request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v7
         with:
           add-paths: './data/*.yaml'
           commit-message: Auto Update - ${{ steps.date.outputs.date }}
           branch: yaml-bot
-          delete-branch: true
-          branch-suffix: timestamp
           title: Auto Update - ${{ steps.date.outputs.date }}
           body: Auto Update generated from workflows/daily_update.yaml
           base: main
