@@ -6,7 +6,7 @@ import re
 from argparse import ArgumentParser
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
@@ -71,25 +71,22 @@ def get_release_date(movie: TmdbObj, region: str) -> Optional[date]:
         return None
 
 
-def handle_stale_yaml(existing: Sequence[GoogleMediaEvent], data: Dict, yaml_path: Path) -> None:
+def handle_stale_yaml_path(existing: GoogleMediaEvent, yaml_path: Path) -> None:
     """
     Removes the yaml file if it is stale
     """
-    if any((e.file_path == yaml_path for e in existing)):
+    if existing.file_path == yaml_path:
         return
 
-    needs_rename = next((e for e in existing if e.imdb_id == data["imdb_id"]), None)
-    if not needs_rename:
-        return
-
-    needs_rename.file_path.rename(yaml_path)
+    existing.file_path.rename(yaml_path)
 
 
-def make_movie_yamls(dir_path: Path, movies: List[TmdbObj]) -> None:
+def make_movie_yamls(dir_path: Path, movies: List[TmdbObj], release_date_gte: date) -> None:
     """
     Makes the movie yamls for each movie from the json data
     """
     existing_movies = YamlCalendar.get_movies(dir_path)
+    untouched_movies = list(existing_movies)
 
     for movie in movies:
         if movie.imdb_id is None:
@@ -109,10 +106,18 @@ def make_movie_yamls(dir_path: Path, movies: List[TmdbObj]) -> None:
             if official_link is not None:
                 movie_data["description"] += f"{official_link}\n"
 
-        handle_stale_yaml(existing_movies, movie_data, yaml_path)
+        existing_movie = next((e for e in existing_movies if e.imdb_id == movie_data["imdb_id"]), None)
+        if existing_movie:
+            handle_stale_yaml_path(existing_movie, yaml_path)
+            untouched_movies.remove(existing_movie)
 
         with open(yaml_path, "w", encoding="UTF-8") as yaml_file:
             yaml.safe_dump(movie_data, yaml_file, sort_keys=False)
+
+    for movie in untouched_movies:
+        if movie.release_date >= release_date_gte:
+            # If our query didn't find a movie that was already in the yaml, it probably was canceled
+            movie.file_path.unlink()
 
 
 def get_season_release_dates(season: TmdbObj) -> List[date]:
@@ -199,7 +204,7 @@ def get_new_media(release_date_gte: date) -> None:
         for folder, payload in movie_queries.items():
             movies = get_movies(payload)
             print(folder, [s.title for s in movies])
-            make_movie_yamls(data_dir / folder, movies)
+            make_movie_yamls(data_dir / folder, movies, release_date_gte)
             progress.update(task, advance=1)
 
         for folder, payload in show_queries.items():
