@@ -101,7 +101,7 @@ class TvGenre(Enum):
 
 
 def query_all_pages(
-    func: Callable[[Discover, int, Dict[str, Any]], List[TmdbObj]]
+    func: Callable[[Discover, int, Dict[str, Any]], List[TmdbObj]],
 ) -> Callable[[Dict[str, Any]], List[TmdbObj]]:
     """
     Function decorator that aggregates the results of func over multiple pages
