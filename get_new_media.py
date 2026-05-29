@@ -16,7 +16,6 @@ from mcu_calendar.webscraping import (
     Companies,
     Keyword,
     MovieGenre,
-    TmdbObj,
     TvGenre,
     get_mcu_movie_link,
     get_mcu_show_link,
@@ -51,22 +50,22 @@ def get_safe_title(title: str) -> str:
     return safe_title
 
 
-def get_release_date(movie: TmdbObj, region: str) -> Optional[date]:
+def get_release_date(movie: Dict[str, Any], region: str) -> Optional[date]:
     """
     Gets the release date for the given region if the details exist, otherwise
     returns the default release_date
     """
-    for region_releases in movie.release_dates.results:
-        if region_releases.iso_3166_1 == region:
-            for release_date in region_releases.release_dates:
+    for region_releases in movie["release_dates"]["results"]:
+        if region_releases["iso_3166_1"] == region:
+            for release_date in region_releases["release_dates"]:
                 # Type 3 is Theatrical release
-                if release_date.type == 3:
+                if release_date["type"] == 3:
                     try:
-                        return date.fromisoformat(release_date.release_date[:10])
+                        return date.fromisoformat(release_date["release_date"][:10])
                     except ValueError:
                         pass
     try:
-        return date.fromisoformat(movie.release_date)
+        return date.fromisoformat(movie["release_date"])
     except ValueError:
         return None
 
@@ -81,7 +80,7 @@ def handle_stale_yaml_path(existing: GoogleMediaEvent, yaml_path: Path) -> None:
     existing.file_path.rename(yaml_path)
 
 
-def make_movie_yamls(dir_path: Path, movies: List[TmdbObj], release_date_gte: date) -> None:
+def make_movie_yamls(dir_path: Path, movies: List[Dict[str, Any]], release_date_gte: date) -> None:
     """
     Makes the movie yamls for each movie from the json data
     """
@@ -89,17 +88,17 @@ def make_movie_yamls(dir_path: Path, movies: List[TmdbObj], release_date_gte: da
     untouched_movies = list(existing_movies)
 
     for movie in movies:
-        if movie.imdb_id is None:
+        if movie["imdb_id"] is None:
             continue
         release_date = get_release_date(movie, "US")
         if release_date is None:
             continue
-        yaml_path = dir_path / (get_safe_title(movie.title) + ".yaml")
+        yaml_path = dir_path / (get_safe_title(movie["title"]) + ".yaml")
         movie_data = {
-            "title": movie.title,
+            "title": movie["title"],
             "release_date": release_date,
-            "imdb_id": movie.imdb_id.strip(),
-            "description": f"https://www.imdb.com/title/{movie.imdb_id}\n",
+            "imdb_id": movie["imdb_id"].strip(),
+            "description": f"https://www.imdb.com/title/{movie['imdb_id']}\n",
         }
         if dir_path.stem == "mcu-movies":
             official_link = get_mcu_movie_link(movie)
@@ -114,49 +113,49 @@ def make_movie_yamls(dir_path: Path, movies: List[TmdbObj], release_date_gte: da
         with open(yaml_path, "w", encoding="UTF-8") as yaml_file:
             yaml.safe_dump(movie_data, yaml_file, sort_keys=False)
 
-    for movie in untouched_movies:
-        if movie.release_date >= release_date_gte:
+    for untouched_movie in untouched_movies:
+        if untouched_movie.release_date >= release_date_gte:
             # If our query didn't find a movie that was already in the yaml, it probably was canceled
-            movie.file_path.unlink()
+            untouched_movie.file_path.unlink()
 
 
-def get_season_release_dates(season: TmdbObj) -> List[date]:
+def get_season_release_dates(season: Dict[str, Any]) -> List[date]:
     """
     Gets the number of distinct weeks in a given season
     """
     air_dates = set()
-    for episode in season.episodes:
-        if episode.air_date:
-            air_dates.add(date.fromisoformat(episode.air_date))
+    for episode in season["episodes"]:
+        if episode["air_date"]:
+            air_dates.add(date.fromisoformat(episode["air_date"]))
     air_dates_list = list(air_dates)
     air_dates_list.sort()
     return air_dates_list
 
 
-def make_show_yamls(dir_path: Path, shows: List[TmdbObj]) -> None:
+def make_show_yamls(dir_path: Path, shows: List[Dict[str, Any]]) -> None:
     """
     Makes the show yamls for each season from the show json data
     """
     for show in shows:
         # print(show.name)
-        safe_title = get_safe_title(show.name)
-        for season in show.seasons:
+        safe_title = get_safe_title(show["name"])
+        for season in show["seasons"]:
             show_data = {
-                "title": show.name,
+                "title": show["name"],
                 "release_dates": get_season_release_dates(season),
-                "imdb_id": show.external_ids.imdb_id,
-                "description": f"https://www.imdb.com/title/{show.external_ids.imdb_id}\n",
+                "imdb_id": show["external_ids"]["imdb_id"],
+                "description": f"https://www.imdb.com/title/{show['external_ids']['imdb_id']}\n",
             }
             if dir_path.stem == "mcu-shows":
                 official_link = get_mcu_show_link(show, season)
                 if official_link is not None:
                     show_data["description"] += f"{official_link}\n"
 
-            if season.season_number == 1:
+            if season["season_number"] == 1:
                 yaml_path = dir_path / (safe_title + ".yaml")
             else:
-                show_data["title"] += f" ({season.name})"
-                yaml_path = dir_path / f"{safe_title}_{season.season_number}.yaml"
+                show_data["title"] += f" ({season['name']})"
+                yaml_path = dir_path / f"{safe_title}_{season['season_number']}.yaml"
 
             with open(yaml_path, "w", encoding="UTF-8") as yaml_file:
                 yaml.safe_dump(show_data, yaml_file, sort_keys=False)
@@ -203,13 +202,13 @@ def get_new_media(release_date_gte: date) -> None:
 
         for folder, payload in movie_queries.items():
             movies = get_movies(payload)
-            print(folder, [s.title for s in movies])
+            print(folder, [s["title"] for s in movies])
             make_movie_yamls(data_dir / folder, movies, release_date_gte)
             progress.update(task, advance=1)
 
         for folder, payload in show_queries.items():
             shows = get_shows(payload)
-            print(folder, [s.name for s in shows])
+            print(folder, [s["name"] for s in shows])
             make_show_yamls(data_dir / folder, shows)
             progress.update(task, advance=1)
 

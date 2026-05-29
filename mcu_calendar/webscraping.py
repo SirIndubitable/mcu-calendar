@@ -9,8 +9,7 @@ from typing import Any, Callable, Dict, List, Optional
 from urllib.parse import quote_plus as url_encode
 
 import requests
-from tmdbv3api import TV, Discover, Movie, Season
-from tmdbv3api.as_obj import AsObj as TmdbObj
+import tmdbsimple as TMDB
 
 
 class Companies(Enum):
@@ -101,23 +100,24 @@ class TvGenre(Enum):
 
 
 def query_all_pages(
-    func: Callable[[Discover, int, Dict[str, Any]], List[TmdbObj]]
-) -> Callable[[Dict[str, Any]], List[TmdbObj]]:
+    func: Callable[[TMDB.Discover, int, Dict[str, Any]], Dict[str, Any]]
+) -> Callable[[Dict[str, Any]], List[Dict[str, Any]]]:
     """
     Function decorator that aggregates the results of func over multiple pages
     """
 
     @wraps(func)
-    def wrapper(payload: Dict[str, Any] = {}) -> List[TmdbObj]:
-        discoverer = Discover()
+    def wrapper(payload: Dict[str, Any] = {}) -> List[Dict[str, Any]]:
+        discoverer = TMDB.Discover()
         page = 0
         data = []
         while True:
             page += 1
-            data += func(discoverer, page, payload)
-            if discoverer.total_pages is None:
+            response = func(discoverer, page, payload)
+            data += response["results"]
+            if response["total_pages"] is None:
                 break
-            if page >= int(discoverer.total_pages):
+            if page >= int(response["total_pages"]):
                 break
         return data
 
@@ -125,7 +125,7 @@ def query_all_pages(
 
 
 @query_all_pages
-def _discover_movies(discoverer: Discover, page: int, payload: Dict[str, Any]) -> List[TmdbObj]:
+def _discover_movies(discoverer: TMDB.Discover, page: int, payload: Dict[str, Any]) -> Dict[str, Any]:
     """
     Discovers movies from TMDB on all pages
     """
@@ -134,11 +134,12 @@ def _discover_movies(discoverer: Discover, page: int, payload: Dict[str, Any]) -
         "sort_by": "release_date.asc",
         "page": page,
     }
-    return discoverer.discover_movies({**base_payload, **payload})
+
+    return discoverer.movie(**{**base_payload, **payload})
 
 
 @query_all_pages
-def _discover_shows(discoverer: Discover, page: int, payload: Dict[str, Any]) -> List[TmdbObj]:
+def _discover_shows(discoverer: TMDB.Discover, page: int, payload: Dict[str, Any]) -> Dict[str, Any]:
     """
     Discovers shows from TMDB on all pages
     """
@@ -149,55 +150,53 @@ def _discover_shows(discoverer: Discover, page: int, payload: Dict[str, Any]) ->
         "sort_by": "first_air_date.asc",
         "page": page,
     }
-    return discoverer.discover_tv_shows({**base_payload, **payload})
+
+    return discoverer.tv(**{**base_payload, **payload})
 
 
-def get_movies(payload: Dict[str, Any]) -> List[TmdbObj]:
+def get_movies(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
     Gets movies from themoviedb.org with the given keyword
     """
     movies = _discover_movies(payload)
-    movies = [m for m in movies if "release_date" in m and m.release_date != ""]
-    movie_api = Movie()
+    movies = [m for m in movies if "release_date" in m and m["release_date"] != ""]
     movie_details = []
     for movie in movies:
-        movie_details.append(movie_api.details(movie["id"], append_to_response="release_dates"))
+        movie_details.append(TMDB.Movies(movie["id"]).info(append_to_response="release_dates"))
 
     return movie_details
 
 
-def should_skip(season: TmdbObj, payload: Dict[str, Any]) -> bool:
+def should_skip(season: Dict[str, Any], payload: Dict[str, Any]) -> bool:
     """
     Checks if the given season should be skipped based on the payload filter criteria
     """
-    if season.air_date is None:
+    if season["air_date"] is None:
         return True
     if "air_date.gte" in payload:
-        return season.air_date < payload["air_date.gte"]
+        return season["air_date"] < payload["air_date.gte"]
     if "air_date.lte" in payload:
-        return season.air_date > payload["air_date.lte"]
+        return season["air_date"] > payload["air_date.lte"]
     return False
 
 
-def get_shows(payload: Dict[str, Any]) -> List[TmdbObj]:
+def get_shows(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
     Gets tv shwos from themoviedb.org with the given keyword
     """
     shows = _discover_shows(payload)
-    shows = [s for s in shows if "first_air_date" in s and s.first_air_date != ""]
+    shows = [s for s in shows if "first_air_date" in s and s["first_air_date"] != ""]
     # The discover api doesn't return season information, so we
     # still need to get the details
-    tv_api = TV()
-    season_api = Season()
     show_details = []
     for show in shows:
-        show_detail = tv_api.details(show["id"], append_to_response="external_ids")
+        show_detail = TMDB.TV(show["id"]).info(append_to_response="external_ids")
         season_details = []
-        for season in show_detail.seasons:
+        for season in show_detail["seasons"]:
             if should_skip(season, payload):
                 continue
-            season_details.append(season_api.details(show.id, season.season_number))
-        show_detail.seasons = season_details
+            season_details.append(TMDB.TV_Seasons(show["id"], season["season_number"]).info())
+        show_detail["seasons"] = season_details
         show_details.append(show_detail)
 
     return show_details
@@ -208,25 +207,25 @@ MARVEL_MOVIES_CX = "0ea857e1a2f692afa"
 GOOGLE_SEARCH_FOMRAT = "https://www.googleapis.com/customsearch/v1?key={api_key}&cx={cx}&q={query}"
 
 
-def get_mcu_movie_link(movie: TmdbObj) -> Optional[str]:
+def get_mcu_movie_link(movie: Dict[str, Any]) -> Optional[str]:
     """
     Searches google to try to find the official webpage for the given mcu movie
     """
     return __get_search_link(
-        movie.title,
+        movie["title"],
         MARVEL_MOVIES_CX,
-        url_encode(movie.title),
+        url_encode(movie["title"]),
     )
 
 
-def get_mcu_show_link(show: TmdbObj, season: TmdbObj) -> Optional[str]:
+def get_mcu_show_link(show: Dict[str, Any], season: Dict[str, Any]) -> Optional[str]:
     """
     Searches google to try to find the official webpage for the given mcu show/season
     """
     return __get_search_link(
-        show.name,
+        show["name"],
         MARVEL_SHOWS_CX,
-        url_encode(f"{show.name} {season.name}"),
+        url_encode(f"{show['name']} {season['name']}"),
     )
 
 
