@@ -168,12 +168,12 @@ def get_new_media(release_date_gte: date) -> None:
     movie_queries: Dict[str, Dict[str, Any]] = {
         "mcu-movies": {
             "with_companies": Companies.MARVEL_STUDIOS.value,
-            "without_genres": MovieGenre.DOCUMENTARY.value,
+            "without_genres": f"{MovieGenre.DOCUMENTARY.value}, {MovieGenre.FAMILY.value}",
             "primary_release_date.gte": release_date_gte.isoformat(),
         },
         "mcu-adjacent-movies": {
             "with_companies": Companies.MARVEL_ENTERTAINMENT.value,
-            "without_genres": MovieGenre.DOCUMENTARY.value,
+            "without_genres": f"{MovieGenre.DOCUMENTARY.value}, {MovieGenre.FAMILY.value}",
             "primary_release_date.gte": release_date_gte.isoformat(),
         },
         "dceu-movies": {
